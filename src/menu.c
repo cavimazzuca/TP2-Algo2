@@ -43,13 +43,15 @@ bool menu_agregar_opcion(menu_t *menu, const char *opcion, const char * comando,
         return true;
 }
 
-int menu_iterar(menu_t *menu, bool (*f)(const char *, const char *, void *), void *extra)
+int menu_mostrar(menu_t *menu, void (*f)(const char *, const char *, int), int estilo)
 {
         if (menu == NULL || f == NULL || menu->cantidad == 0)
                 return 0;
         int i = 0;
-        while (i < menu->cantidad && f(menu->opciones[i].texto, menu->opciones[i].comando, extra))
+        while (i < menu->cantidad) {
+                f(menu->opciones[i].texto, menu->opciones[i].comando, estilo);
                 i++;
+        }
         return i;
 }
 
