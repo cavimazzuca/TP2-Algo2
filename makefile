@@ -1,4 +1,4 @@
-VALGRIND_FLAGS=--leak-check=full --track-origins=yes --show-reachable=yes --error-exitcode=2 --show-leak-kinds=all --trace-children=yes
+VALGRIND_FLAGS=-s --leak-check=full --track-origins=yes --show-reachable=yes --error-exitcode=2 --show-leak-kinds=all --trace-children=yes
 CFLAGS =-std=c99 -Wall -Wconversion -Wtype-limits -pedantic -Werror -O2 -g
 CC = gcc
 CLANGFLAGS =-i -style=file
@@ -20,7 +20,5 @@ clang:
 compilar_tp2:
 	$(CC) $(CFLAGS) src/*.c tp2.c -o tp2
 
-valgrind_tp2: compilar_tp2
+tp2: compilar_tp2
 	valgrind $(VALGRIND_FLAGS) ./tp2
-
-tp2: valgrind_tp2

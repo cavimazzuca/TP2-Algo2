@@ -1,10 +1,11 @@
 #include "menu.h"
 #include <stdlib.h>
+#include <ctype.h>
 
 typedef struct opcion {
         const char *texto;
         const char *comando;
-        bool (*f)(void *, void *);
+        bool (*f)(void *);
 } opcion_t;
 
 struct menu {
@@ -20,7 +21,7 @@ menu_t *menu_crear()
         return menu;
 }
 
-opcion_t opcion_crear(const char *texto, const char *comando, bool (*f)(void *, void *))
+opcion_t opcion_crear(const char *texto, const char *comando, bool (*f)(void *))
 {
         opcion_t opcion;
         opcion.texto = texto;
@@ -29,7 +30,7 @@ opcion_t opcion_crear(const char *texto, const char *comando, bool (*f)(void *, 
         return opcion;
 }
 
-bool menu_agregar_opcion(menu_t *menu, const char *opcion, const char * comando, bool (*f)(void *, void *))
+bool menu_agregar_opcion(menu_t *menu, const char *opcion, const char * comando, bool (*f)(void *))
 {
         if (menu == NULL || opcion == NULL)
                 return false;
@@ -65,10 +66,13 @@ void menu_destruir(menu_t *menu)
 
 int menu_buscar(menu_t *menu, const char *comando)
 {
+        char cmd[strlen(comando) + 1];
+        strcpy(cmd, comando);
         if (menu == NULL)
                 return -1;
         int i = 0;
         while (i < menu->cantidad) {
+                cmd[0] = (char)tolower(comando[0]);
                 if (strcmp(comando, menu->opciones[i].comando) == 0)
                         return i;
                 i++;
@@ -76,22 +80,16 @@ int menu_buscar(menu_t *menu, const char *comando)
         return -1;
 }
 
-bool menu_contiene(menu_t *menu, const char *comando)
+bool menu_ejecutar(menu_t *menu, const char *comando, void *extra)
 {
         if (menu == NULL)
-                return NULL;
-        if (menu_buscar(menu, comando) >= 0)
-                return true;
-        return false;
-}
-
-void menu_ejecutar(menu_t *menu, const char *comando, void *extra)
-{
-        if (menu == NULL)
-                return;
+                return false;
         int pos = menu_buscar(menu, comando);
+        if (pos < 0)
+                return false;
         if (menu->opciones[pos].f == NULL)
-                return;
+                return true; // true pero no hace nada.
         if (pos >= 0)
-                menu->opciones[pos].f(menu, extra);
+                menu->opciones[pos].f(extra);
+        return true;
 }
