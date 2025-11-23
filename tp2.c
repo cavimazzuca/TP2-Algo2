@@ -12,19 +12,14 @@ enum estilo {
 	ESTILO_2
 };
 
-void mostrar_opcion(const char *texto, const char *comando, int estilo)
+void mostrar_opcion(const char *texto, const char *comando, void *estilo_v)
 {
+	int estilo = *(int *)estilo_v;
 	if (estilo == ESTILO_NORMAL)
 		printf("%s. %s\n", comando, texto);
 	if (estilo == ESTILO_2)
 		printf(ANSI_BG_BLUE ANSI_COLOR_RED "%s. %s\n", comando, texto);
 	
-}
-
-bool salir_del_menu(void *menu, void *salir)
-{
-	*(bool *)salir = true;
-	return true;
 }
 
 void jugar(void *menu, void *juego)
@@ -34,37 +29,44 @@ void jugar(void *menu, void *juego)
 
 void esperar_respuesta(menu_t *menu)
 {
-	bool salir = false;
-	while (!salir) {
+	while (menu_esta_abierto(menu)) {
 		printf(ANSI_RESET_SCREEN);
-		menu_mostrar(menu, mostrar_opcion, ESTILO_2);
-
+		menu_mostrar(menu, mostrar_opcion, menu_ctx(menu));
 		char *comando = leer_linea2(stdin);
-		if (!menu_ejecutar(menu, comando, &salir))
+		if (!menu_ejecutar(menu, comando))
 			printf("No se encontró el comando especificado.\n");
 		free(comando);
 	}
 }
 
-bool abrir_menu(void *menu_v)
+void entrar_al_menu(void *menu_v)
 {
 	menu_t *menu = (menu_t *)menu_v;
+	menu_abrir(menu);
 	esperar_respuesta(menu);
-	return true;
 }
+
+void salir_del_menu(void *menu_v)
+{
+	menu_cerrar((menu_t *)menu_v);
+}
+
+//no puedo cambiar el estilo si solo recibo un parametro.........
+void cambiar_estilo(menu_t *menu)
 
 int main(int argc, char *argv[])
 {
 	menu_t *menu_principal = menu_crear();
-	menu_agregar_opcion(menu_principal, "Cargar Archivo", "C", NULL);
-	menu_agregar_opcion(menu_principal, "Buscar", "B", NULL);
-	menu_agregar_opcion(menu_principal, "Mostrar", "M", NULL);
-	menu_agregar_opcion(menu_principal, "Jugar", "J", NULL);
-	menu_agregar_opcion(menu_principal, "Jugar con semilla", "S", NULL);
-	menu_agregar_opcion(menu_principal, "Cambiar estilo", "E", NULL);
-	menu_agregar_opcion(menu_principal, "Salir del juego", "Q", NULL);
 
-	abrir_menu(menu_principal);
+	menu_agregar_opcion(menu_principal, "Cargar Archivo", "C", NULL, NULL);
+	menu_agregar_opcion(menu_principal, "Buscar", "B", NULL, NULL);
+	menu_agregar_opcion(menu_principal, "Mostrar", "M", NULL, NULL);
+	menu_agregar_opcion(menu_principal, "Jugar", "J", NULL, NULL);
+	menu_agregar_opcion(menu_principal, "Jugar con semilla", "S", NULL, NULL);
+	menu_agregar_opcion(menu_principal, "Cambiar estilo", "E", NULL, NULL);
+	menu_agregar_opcion(menu_principal, "Salir del juego", "Q", salir_del_menu, menu_principal);
+
+	entrar_al_menu(menu_principal);
 
 	menu_destruir(menu_principal);
 	return 0;
