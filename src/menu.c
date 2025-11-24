@@ -13,16 +13,16 @@ struct menu {
         opcion_t *opciones;
         int cantidad;
         bool abierto;
-        void *ctx
+        void *ctx;
 };
 
-menu_t *menu_crear()
+menu_t *menu_crear(void *ctx)
 {
         menu_t *menu = malloc(sizeof(menu_t));
         menu->opciones = malloc(sizeof(opcion_t));
         menu->cantidad = 0;
         menu->abierto = false;
-        menu->ctx = NULL;
+        menu->ctx = ctx;
         return menu;
 }
 
@@ -137,8 +137,10 @@ bool menu_esta_abierto(menu_t *menu)
         return menu->abierto;
 }
 
-bool menu_añadir_ctx(menu_t *menu, void *ctx)
+void menu_cambiar_ctx(menu_t *menu, void *ctx)
 {
+        if (menu == NULL)       
+                return;
         menu->ctx = ctx;
 }
 

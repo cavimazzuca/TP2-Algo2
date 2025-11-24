@@ -1,6 +1,7 @@
 {
         "files.associations": {
                 "string.h": "c",
-                "linea_comandos.h": "c"
+                "linea_comandos.h": "c",
+                "stdlib.h": "c"
         }
 }

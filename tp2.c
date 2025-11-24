@@ -1,6 +1,8 @@
 #include "src/ansi.h"
 #include "src/menu.h"
 #include "src/linea_comandos.h"
+#include "src/tp1.h"
+#include "src/juego.h"
 #include <stdio.h>
 #include <ctype.h>
 #include <stdlib.h>
@@ -14,7 +16,7 @@ enum estilo {
 
 void mostrar_opcion(const char *texto, const char *comando, void *estilo_v)
 {
-	int estilo = *(int *)estilo_v;
+	enum estilo estilo = *(enum estilo *)estilo_v;
 	if (estilo == ESTILO_NORMAL)
 		printf("%s. %s\n", comando, texto);
 	if (estilo == ESTILO_2)
@@ -51,23 +53,50 @@ void salir_del_menu(void *menu_v)
 	menu_cerrar((menu_t *)menu_v);
 }
 
-//no puedo cambiar el estilo si solo recibo un parametro.........
-void cambiar_estilo(menu_t *menu)
+void cambiar_estilo(void *estilo_v)
+{
+	enum estilo *estilo = (enum estilo *)estilo_v;
+	switch (*estilo) {
+		case ESTILO_NORMAL:
+			*estilo = ESTILO_2;
+			break;
+		case ESTILO_2:
+			*estilo = ESTILO_NORMAL;
+			break;
+		default:
+			*estilo = ESTILO_NORMAL;
+	}
+	
+}
 
 int main(int argc, char *argv[])
 {
-	menu_t *menu_principal = menu_crear();
+	tp1_t *tp1 = tp1_leer_archivo("ejemplos/normal.csv");
+	if (tp1 == NULL) {
+		printf("Hubo un error al leer tu archivo de pokemones.\n");
+		return ERROR;
+	}
+	enum estilo estilo = ESTILO_NORMAL;
+	menu_t *menu_principal = menu_crear(&estilo);
+	menu_t *menu_buscar = menu_crear(&estilo);
+	menu_t *menu_mostrar = menu_crear(&estilo);
+	juego_t *juego = juego_crear(tp1);
 
-	menu_agregar_opcion(menu_principal, "Cargar Archivo", "C", NULL, NULL);
-	menu_agregar_opcion(menu_principal, "Buscar", "B", NULL, NULL);
-	menu_agregar_opcion(menu_principal, "Mostrar", "M", NULL, NULL);
-	menu_agregar_opcion(menu_principal, "Jugar", "J", NULL, NULL);
-	menu_agregar_opcion(menu_principal, "Jugar con semilla", "S", NULL, NULL);
-	menu_agregar_opcion(menu_principal, "Cambiar estilo", "E", NULL, NULL);
-	menu_agregar_opcion(menu_principal, "Salir del juego", "Q", salir_del_menu, menu_principal);
+	menu_agregar_opcion(menu_principal, "Cargar Archivo.", "C", NULL, NULL);
+	menu_agregar_opcion(menu_principal, "Buscar.", "B", entrar_al_menu, menu_buscar);
+	menu_agregar_opcion(menu_principal, "Mostrar.", "M", entrar_al_menu, menu_mostrar);
+	menu_agregar_opcion(menu_principal, "Jugar.", "J", NULL, NULL);
+	menu_agregar_opcion(menu_principal, "Jugar con semilla.", "S", NULL, NULL);
+	menu_agregar_opcion(menu_principal, "Cambiar estilo.", "E", cambiar_estilo, menu_ctx(menu_principal));
+	menu_agregar_opcion(menu_principal, "Salir del juego.", "Q", salir_del_menu, menu_principal);
 
+	menu_agregar_opcion(menu_buscar, "Volver al menú anterior.", "A", salir_del_menu, menu_buscar);
+	menu_agregar_opcion(menu_buscar, "Volver al menú anterior.", "A", salir_del_menu, menu_mostrar);
 	entrar_al_menu(menu_principal);
 
+
+
 	menu_destruir(menu_principal);
+	menu_destruir(menu_buscar);
 	return 0;
 }

@@ -20,7 +20,7 @@ void menu_destruir(menu_t *menu);
 
 bool menu_esta_abierto(menu_t *menu);
 
-bool menu_añadir_ctx(menu_t *menu, void *ctx);
+void menu_cambiar_ctx(menu_t *menu, void *ctx);
 
 void *menu_ctx(menu_t *menu);
 
