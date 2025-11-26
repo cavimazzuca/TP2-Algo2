@@ -4,17 +4,19 @@
 #include <stdbool.h>
 typedef struct menu menu_t;
 
-menu_t *menu_crear();
+menu_t *menu_crear(void *ctx);
 
 void menu_abrir(menu_t *menu);
 
 void menu_cerrar(menu_t *menu);
 
-bool menu_agregar_opcion(menu_t *menu, const char *opcion, const char * comando, void (*f)(void *), void *ctx);
+bool menu_agregar_opcion(menu_t *menu, const char *opcion, const char *comando,
+			 void (*f)(void *), void *ctx);
 
 bool menu_ejecutar(menu_t *menu, const char *comando);
 
-int menu_mostrar(menu_t *menu, void (*f)(const char *, const char *, void *), void *ctx);
+int menu_mostrar(menu_t *menu, void (*f)(const char *, const char *, void *),
+		 void *ctx);
 
 void menu_destruir(menu_t *menu);
 

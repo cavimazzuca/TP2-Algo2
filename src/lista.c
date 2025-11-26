@@ -1,4 +1,4 @@
-#include "nodo.h"
+#include "nodo_lista/nodo.h"
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>

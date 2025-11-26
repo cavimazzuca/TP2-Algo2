@@ -15,10 +15,13 @@ clean:
 	rm -f pruebas_alumno
 
 clang:
-	clang-format $(CLANGFLAGS) *.c src/*.c src/menu.h
+	clang-format $(CLANGFLAGS) *.c src/*.c src/menu.h src/interfaz.h src/juego.h
 
 compilar_tp2:
 	$(CC) $(CFLAGS) src/*.c tp2.c -o tp2
 
 tp2: compilar_tp2
 	valgrind $(VALGRIND_FLAGS) ./tp2
+
+tp2_archivo: compilar_tp2
+	valgrind $(VALGRIND_FLAGS) ./tp2 ejemplos/normal.csv

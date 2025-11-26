@@ -1,6 +1,6 @@
 #include "src/ansi.h"
 #include "src/menu.h"
-#include "src/linea_comandos.h"
+#include "src/interfaz.h"
 #include "src/tp1.h"
 #include "src/juego.h"
 #include <stdio.h>
@@ -9,43 +9,12 @@
 #include <time.h>
 #define ERROR -1
 
-enum estilo {
-	ESTILO_NORMAL,
-	ESTILO_2
-};
-
-void mostrar_opcion(const char *texto, const char *comando, void *estilo_v)
-{
-	enum estilo estilo = *(enum estilo *)estilo_v;
-	if (estilo == ESTILO_NORMAL)
-		printf("%s. %s\n", comando, texto);
-	if (estilo == ESTILO_2)
-		printf(ANSI_BG_BLUE ANSI_COLOR_RED "%s. %s\n", comando, texto);
-	
-}
-
-void jugar(void *menu, void *juego)
-{
-	
-}
-
-void esperar_respuesta(menu_t *menu)
-{
-	while (menu_esta_abierto(menu)) {
-		printf(ANSI_RESET_SCREEN);
-		menu_mostrar(menu, mostrar_opcion, menu_ctx(menu));
-		char *comando = leer_linea2(stdin);
-		if (!menu_ejecutar(menu, comando))
-			printf("No se encontró el comando especificado.\n");
-		free(comando);
-	}
-}
-
 void entrar_al_menu(void *menu_v)
 {
 	menu_t *menu = (menu_t *)menu_v;
 	menu_abrir(menu);
-	esperar_respuesta(menu);
+	char *msj_error = "\n";
+	esperar_respuesta(menu, &msj_error);
 }
 
 void salir_del_menu(void *menu_v)
@@ -57,46 +26,92 @@ void cambiar_estilo(void *estilo_v)
 {
 	enum estilo *estilo = (enum estilo *)estilo_v;
 	switch (*estilo) {
-		case ESTILO_NORMAL:
-			*estilo = ESTILO_2;
-			break;
-		case ESTILO_2:
-			*estilo = ESTILO_NORMAL;
-			break;
-		default:
-			*estilo = ESTILO_NORMAL;
+	case ESTILO_NORMAL:
+		*estilo = ESTILO_2;
+		break;
+	case ESTILO_2:
+		*estilo = ESTILO_3;
+		break;
+	case ESTILO_3:
+		*estilo = ESTILO_NORMAL;
+		break;
+	default:
+		*estilo = ESTILO_NORMAL;
 	}
-	
+}
+
+void jugar(void *juego_v)
+{
+	juego_t *juego = (juego_t *)juego_v;
+	juego_iniciar(juego);
+}
+
+void jugar_con_semilla(void *juego_v)
+{
+	juego_t *juego = (juego_t *)juego_v;
+	printf("EScribe la semilla a utilizar:\n");
+	char *semilla = leer_respuesta(stdin);
+	cambiar_semilla(juego, atoi(semilla));
+	free(semilla);
+	jugar(juego);
+	return;
+}
+
+void cargar_archivo(void *juego_v)
+{
+	juego_t *juego = (juego_t *)juego_v;
+	printf("Escribe el archivo a cargar:\n");
+	char *comando = leer_respuesta(stdin);
+	tp1_t *tp1 = tp1_leer_archivo(comando);
+	if (tp1 == NULL) {
+		printf("el archivo no existe.\n"); //no se va a mostrar.
+		return;
+	}
+	printf("%i\n", (int)tp1_cantidad(tp1));
+	juego_meter_tp1(juego, tp1);
+	tp1_destruir(tp1);
+	free(comando);
 }
 
 int main(int argc, char *argv[])
 {
-	tp1_t *tp1 = tp1_leer_archivo("ejemplos/normal.csv");
-	if (tp1 == NULL) {
-		printf("Hubo un error al leer tu archivo de pokemones.\n");
-		return ERROR;
+	char *archivo = NULL;
+	if (argc > 1) {
+		archivo = argv[1];
 	}
 	enum estilo estilo = ESTILO_NORMAL;
 	menu_t *menu_principal = menu_crear(&estilo);
 	menu_t *menu_buscar = menu_crear(&estilo);
 	menu_t *menu_mostrar = menu_crear(&estilo);
+	tp1_t *tp1 = NULL;
+	if (archivo != NULL)
+		tp1 = tp1_leer_archivo(archivo);
 	juego_t *juego = juego_crear(tp1);
 
-	menu_agregar_opcion(menu_principal, "Cargar Archivo.", "C", NULL, NULL);
-	menu_agregar_opcion(menu_principal, "Buscar.", "B", entrar_al_menu, menu_buscar);
-	menu_agregar_opcion(menu_principal, "Mostrar.", "M", entrar_al_menu, menu_mostrar);
-	menu_agregar_opcion(menu_principal, "Jugar.", "J", NULL, NULL);
-	menu_agregar_opcion(menu_principal, "Jugar con semilla.", "S", NULL, NULL);
-	menu_agregar_opcion(menu_principal, "Cambiar estilo.", "E", cambiar_estilo, menu_ctx(menu_principal));
-	menu_agregar_opcion(menu_principal, "Salir del juego.", "Q", salir_del_menu, menu_principal);
+	menu_agregar_opcion(menu_principal, "Cargar Archivo.", "C",
+			    cargar_archivo, juego);
+	menu_agregar_opcion(menu_principal, "Buscar.", "B", entrar_al_menu,
+			    menu_buscar);
+	menu_agregar_opcion(menu_principal, "Mostrar.", "M", entrar_al_menu,
+			    menu_mostrar);
+	menu_agregar_opcion(menu_principal, "Jugar.", "J", jugar, juego);
+	menu_agregar_opcion(menu_principal, "Jugar con semilla.", "S",
+			    jugar_con_semilla, juego);
+	menu_agregar_opcion(menu_principal, "Cambiar estilo.", "E",
+			    cambiar_estilo, menu_ctx(menu_principal));
+	menu_agregar_opcion(menu_principal, "Salir del juego.", "Q",
+			    salir_del_menu, menu_principal);
 
-	menu_agregar_opcion(menu_buscar, "Volver al menú anterior.", "A", salir_del_menu, menu_buscar);
-	menu_agregar_opcion(menu_buscar, "Volver al menú anterior.", "A", salir_del_menu, menu_mostrar);
+	menu_agregar_opcion(menu_buscar, "Volver al menú anterior.", "A",
+			    salir_del_menu, menu_buscar);
+	menu_agregar_opcion(menu_mostrar, "Volver al menú anterior.", "A",
+			    salir_del_menu, menu_mostrar);
 	entrar_al_menu(menu_principal);
 
-
-
+	tp1_destruir(tp1);
+	juego_destruir(juego);
 	menu_destruir(menu_principal);
 	menu_destruir(menu_buscar);
+	menu_destruir(menu_mostrar);
 	return 0;
 }
