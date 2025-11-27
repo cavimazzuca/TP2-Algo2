@@ -73,6 +73,25 @@ void cargar_archivo(void *juego_v)
 	free(comando);
 }
 
+//menu que muestra un error y espera a que vuelvas
+void menu_error(const char* mensaje, enum estilo *estilo)
+{
+	menu_t *menu_error = menu_crear(estilo);
+	menu_agregar_opcion(menu_error, "A", "Volver", NULL);
+	mostrar_opcion(const char *texto, const char *comando, void *estilo_v)
+}
+
+void buscar_nombre(void *tp1)
+{
+	printf(ANSI_RESET_SCREEN);
+	printf("Escribe el nombre de tu pokemon
+	printf(ANSI_RESET_SCREEN);
+}
+
+void buscar_id(void *tp1)
+{
+}
+
 int main(int argc, char *argv[])
 {
 	char *archivo = NULL;
@@ -101,11 +120,17 @@ int main(int argc, char *argv[])
 			    cambiar_estilo, menu_ctx(menu_principal));
 	menu_agregar_opcion(menu_principal, "Salir del juego.", "Q",
 			    salir_del_menu, menu_principal);
-
+	
+	menu_agregar_opcion(menu_buscar, "Buscar por nombre.", "N",
+			    buscar_nombre, tp1);
+	menu_agregar_opcion(menu_buscar, "Buscar por ID.", "I",
+			    buscar_id, tp1);
 	menu_agregar_opcion(menu_buscar, "Volver al menú anterior.", "A",
 			    salir_del_menu, menu_buscar);
+	
 	menu_agregar_opcion(menu_mostrar, "Volver al menú anterior.", "A",
 			    salir_del_menu, menu_mostrar);
+	
 	entrar_al_menu(menu_principal);
 
 	tp1_destruir(tp1);
