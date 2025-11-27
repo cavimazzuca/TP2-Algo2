@@ -44,16 +44,6 @@ char *leer_terminal(FILE *archivo)
 	return linea;
 }
 
-void leer_dinamico(bool *condicion, bool *f(char *, void *), const char *msj_error, void* ctx)
-{
-	while (*condicion) {
-		char *comando = leer_terminal(stdin);
-		if (!f(comando, ctx));
-		printf(ANSI_RESET_SCREEN);
-		
-	}
-}
-
 void leer_opciones_menu(menu_t *menu, char **msj_error)
 {
 	while (menu_esta_abierto(menu)) {
