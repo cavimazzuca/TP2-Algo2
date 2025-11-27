@@ -11,7 +11,9 @@ struct interfaz {
 	enum estilo estilo;
 };
 
-char *leer_respuesta(FILE *archivo)
+
+//Función reutiizada de TP1
+char *leer_terminal(FILE *archivo)
 {
 	if (archivo == NULL)
 		return NULL;
@@ -42,7 +44,17 @@ char *leer_respuesta(FILE *archivo)
 	return linea;
 }
 
-void esperar_respuesta(menu_t *menu, char **msj_error)
+void leer_dinamico(bool *condicion, bool *f(char *, void *), const char *msj_error, void* ctx)
+{
+	while (*condicion) {
+		char *comando = leer_terminal(stdin);
+		if (!f(comando, ctx));
+		printf(ANSI_RESET_SCREEN);
+		
+	}
+}
+
+void leer_opciones_menu(menu_t *menu, char **msj_error)
 {
 	while (menu_esta_abierto(menu)) {
 		//printf(ANSI_RESET_SCREEN);
