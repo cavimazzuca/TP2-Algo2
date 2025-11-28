@@ -47,16 +47,34 @@ char *leer_terminal(FILE *archivo)
 void leer_opciones_menu(menu_t *menu, char **msj_error)
 {
 	while (menu_esta_abierto(menu)) {
-		//printf(ANSI_RESET_SCREEN);
+		printf(ANSI_RESET_SCREEN);
 		menu_mostrar(menu, mostrar_opcion, menu_ctx(menu));
 		printf("%s", *msj_error);
-		char *comando = leer_respuesta(stdin);
+		char *comando = leer_terminal(stdin);
 		*msj_error = "\n";
 		if (!menu_ejecutar(menu, comando))
 			*msj_error = ANSI_COLOR_RED
 				"No se encontró el comando especificado.\n" ANSI_COLOR_RESET;
 		free(comando);
 	}
+}
+
+void leer_comando(menu_t *menu, bool (*f)(void *, void *), char *msj_error)
+{
+	char *comando = leer_terminal(stdin);
+	strcpy(msj_error, 0);
+
+}
+
+
+void print_estilo(const char *texto, enum estilo estilo)
+{
+	if (estilo == ESTILO_NORMAL)
+		printf("%s", texto);
+	if (estilo == ESTILO_2)
+		printf(ANSI_BG_WHITE ANSI_COLOR_BLACK "%s", texto);
+	if (estilo == ESTILO_3)
+		printf(ANSI_BG_RESET ANSI_COLOR_GREEN "%s", texto);
 }
 
 void mostrar_opcion(const char *texto, const char *comando, void *estilo_v)

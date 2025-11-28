@@ -284,7 +284,7 @@ void loop_juego(juego_t *juego)
 			printf("Le toca al Jugador 2.\n");
 		else
 			printf("Le toca al Jugador 1.\n");
-		char *comando = leer_respuesta(stdin);
+		char *comando = leer_terminal(stdin);
 		procesar_jugada(comando, juego, &carta_volteada);
 		free(comando);
 	}
@@ -304,7 +304,7 @@ void juego_iniciar(juego_t *juego)
 		char *msj_error = "\n";
 		msj_error = ANSI_COLOR_RED
 			"Se debe incluir un archivo antes de jugar.\n" ANSI_COLOR_RESET;
-		esperar_respuesta(menu, &msj_error);
+		leer_opciones_menu(menu, &msj_error);
 		menu_destruir(menu);
 		return;
 	}

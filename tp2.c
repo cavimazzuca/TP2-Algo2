@@ -14,7 +14,7 @@ void entrar_al_menu(void *menu_v)
 	menu_t *menu = (menu_t *)menu_v;
 	menu_abrir(menu);
 	char *msj_error = "\n";
-	esperar_respuesta(menu, &msj_error);
+	leer_opciones_menu(menu, &msj_error);
 }
 
 void salir_del_menu(void *menu_v)
@@ -50,7 +50,7 @@ void jugar_con_semilla(void *juego_v)
 {
 	juego_t *juego = (juego_t *)juego_v;
 	printf("EScribe la semilla a utilizar:\n");
-	char *semilla = leer_respuesta(stdin);
+	char *semilla = leer_terminal(stdin);
 	cambiar_semilla(juego, atoi(semilla));
 	free(semilla);
 	jugar(juego);
@@ -61,7 +61,7 @@ void cargar_archivo(void *juego_v)
 {
 	juego_t *juego = (juego_t *)juego_v;
 	printf("Escribe el archivo a cargar:\n");
-	char *comando = leer_respuesta(stdin);
+	char *comando = leer_terminal(stdin);
 	tp1_t *tp1 = tp1_leer_archivo(comando);
 	if (tp1 == NULL) {
 		printf("el archivo no existe.\n"); //no se va a mostrar.
@@ -74,17 +74,19 @@ void cargar_archivo(void *juego_v)
 }
 
 //menu que muestra un error y espera a que vuelvas
-void menu_error(const char* mensaje, enum estilo *estilo)
+void menu_error(char* mensaje, enum estilo *estilo)
 {
 	menu_t *menu_error = menu_crear(estilo);
-	menu_agregar_opcion(menu_error, "A", "Volver", NULL);
-	mostrar_opcion(const char *texto, const char *comando, void *estilo_v)
+	menu_agregar_opcion(menu_error, "A", "Volver", salir_del_menu, menu_error);
+	leer_opciones_menu(menu_error, &mensaje);
 }
 
-void buscar_nombre(void *tp1)
+void buscar_nombre(void *menu_v)
 {
+	menu_t *menu = (menu_t *)menu_v;
+	enum estilo estilo = *(enum estilo *)menu_ctx(menu);
 	printf(ANSI_RESET_SCREEN);
-	printf("Escribe el nombre de tu pokemon
+	print_estilo("Escribe el nombre de tu pokemon:\n", estilo);
 	printf(ANSI_RESET_SCREEN);
 }
 

@@ -8,6 +8,8 @@ typedef struct interfaz interfaz_t;
 
 char *leer_terminal(FILE *archivo);
 
+void print_estilo(const char *texto, enum estilo estilo);
+
 void leer_opciones_menu(menu_t *menu, char **msj_error);
 
 void mostrar_opcion(const char *texto, const char *comando, void *estilo_v);
