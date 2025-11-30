@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include "tp1.h"
 #include "menu.h"
+#include "interfaz.h"
 
 typedef struct juego juego_t;
 
@@ -16,6 +17,6 @@ void juego_iniciar(juego_t *juego);
 
 void juego_destruir(juego_t *juego);
 
-void juego_cambiar_estilo(juego_t *juego, void *estilo_v);
+void juego_cambiar_estilo(juego_t *juego, enum estilo estilo);
 
 #endif // JUEGO_H_

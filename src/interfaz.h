@@ -2,6 +2,7 @@
 #define INTERFAZ_H_
 #include <stdio.h>
 #include "menu.h"
+
 enum estilo { ESTILO_NORMAL, ESTILO_2, ESTILO_3 };
 
 typedef struct interfaz interfaz_t;
@@ -13,5 +14,7 @@ void print_estilo(const char *texto, enum estilo estilo);
 void leer_opciones_menu(menu_t *menu, char **msj_error);
 
 void mostrar_opcion(const char *texto, const char *comando, void *estilo_v);
+
+void leer_comando(bool (*f)(char *, void *, char *), void *ctx, char *mensaje_error);
 
 #endif // INTERFAZ_H_

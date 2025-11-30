@@ -9,12 +9,22 @@
 #include <time.h>
 #define ERROR -1
 
+bool ejecutar(char *comando, void *menu_v, char *mensaje_error)
+{
+	menu_t *menu = (menu_t *)menu_v;
+	return menu_ejecutar(menu, comando);
+}
+
 void entrar_al_menu(void *menu_v)
 {
 	menu_t *menu = (menu_t *)menu_v;
 	menu_abrir(menu);
 	char *msj_error = "\n";
-	leer_opciones_menu(menu, &msj_error);
+	while (menu_esta_abierto(menu)) {
+		menu_mostrar(menu, mostrar_opcion, )
+		leer_comando(ejecutar, menu, msj_error);
+	}
+	//leer_opciones_menu(menu, &msj_error);
 }
 
 void salir_del_menu(void *menu_v)
@@ -48,8 +58,9 @@ void jugar(void *juego_v)
 
 void jugar_con_semilla(void *juego_v)
 {
+	printf(ANSI_RESET_SCREEN);
 	juego_t *juego = (juego_t *)juego_v;
-	printf("EScribe la semilla a utilizar:\n");
+	printf("Escribe la semilla a utilizar:\n");
 	char *semilla = leer_terminal(stdin);
 	cambiar_semilla(juego, atoi(semilla));
 	free(semilla);
@@ -59,6 +70,7 @@ void jugar_con_semilla(void *juego_v)
 
 void cargar_archivo(void *juego_v)
 {
+	printf(ANSI_RESET_SCREEN);
 	juego_t *juego = (juego_t *)juego_v;
 	printf("Escribe el archivo a cargar:\n");
 	char *comando = leer_terminal(stdin);
@@ -87,6 +99,9 @@ void buscar_nombre(void *menu_v)
 	enum estilo estilo = *(enum estilo *)menu_ctx(menu);
 	printf(ANSI_RESET_SCREEN);
 	print_estilo("Escribe el nombre de tu pokemon:\n", estilo);
+	//char *comando = leer_terminal(stdin);
+	//if (!buscar_nombre_tp1(menu))
+	//free(comando);
 	printf(ANSI_RESET_SCREEN);
 }
 
@@ -140,5 +155,6 @@ int main(int argc, char *argv[])
 	menu_destruir(menu_principal);
 	menu_destruir(menu_buscar);
 	menu_destruir(menu_mostrar);
+	printf(ANSI_COLOR_RESET);
 	return 0;
 }

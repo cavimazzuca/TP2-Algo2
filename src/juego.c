@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include "tp1.h"
 #include <unistd.h>
-#define CANTIDAD_PARES 9
+#define CANTIDAD_PARES 3
 
 typedef struct carta {
 	struct pokemon *pokemon;
@@ -30,6 +30,7 @@ struct juego {
 	enum estilo estilo;
 	int puntos_j2;
 	int puntos_j1;
+	carta_t *ultima_volteada;
 	lista_t *ultimas_jugadas;
 	unsigned int semilla;
 };
@@ -44,6 +45,11 @@ int posicion_aleatoria(hash_t *hash)
 		snprintf(num_carta, sizeof(num_carta), "%d", random);
 	}
 	return random;
+}
+
+void juego_cambiar_estilo(juego_t *juego, enum estilo estilo)
+{
+	juego->estilo = estilo;
 }
 
 carta_t *carta_crear()
@@ -199,6 +205,11 @@ void mostrar_cartas(juego_t *juego)
 		mostrar_carta(num_carta, carta, &i);
 	}
 	printf("\n");
+	mostrar_jugadas(juego);
+	if (juego->turno % 2 == 0)
+		print_estilo("Le toca al Jugador 2.\n", juego->estilo);
+	else
+		print_estilo("Le toca al Jugador 1.\n", juego->estilo);	
 }
 
 jugada_t *jugada_crear()
@@ -209,20 +220,28 @@ jugada_t *jugada_crear()
 	return jugada;
 }
 
-void procesar_jugada(char *comando, juego_t *juego, carta_t **carta_anterior)
+bool procesar_jugada(char *comando, void *juego_v, char *mensaje_error)
 {
+	juego_t *juego = (juego_t *)juego_v;
 	carta_t *carta_volteada = hash_buscar(juego->pokemones, comando);
-	if (carta_volteada == NULL)
-		return;
-	if (carta_volteada->encontrado)
-		return;
-	if (*carta_anterior == NULL) {
-		*carta_anterior = carta_volteada;
-		carta_volteada->seleccionada = true;
-		return;
+	strcpy(mensaje_error, "");
+	if (carta_volteada == NULL) {
+		strcpy(mensaje_error, ANSI_COLOR_RED "Debes seleccionar una carta válida." ANSI_COLOR_RESET);
+		return false;
 	}
-	if (carta_volteada == *carta_anterior)
-		return;
+	if (carta_volteada->encontrado) {
+		strcpy(mensaje_error, ANSI_COLOR_RED "La carta seleccionada ya ha sido volteada." ANSI_COLOR_RESET);
+		return false;
+	}
+	if (juego->ultima_volteada == NULL) {
+		juego->ultima_volteada = carta_volteada;
+		carta_volteada->seleccionada = true;
+		return true;
+	}
+	if (carta_volteada == juego->ultima_volteada) {
+		strcpy(mensaje_error, ANSI_COLOR_RED "La carta seleccionada ya ha sido volteada." ANSI_COLOR_RESET);
+		return false;
+	}
 
 	/*
     jugada_t *jugada = jugada_crear();
@@ -233,10 +252,10 @@ void procesar_jugada(char *comando, juego_t *juego, carta_t **carta_anterior)
     */
 
 	carta_volteada->seleccionada = true;
-	if (carta_volteada->pokemon->id == (*carta_anterior)->pokemon->id) {
+	if (carta_volteada->pokemon->id == juego->ultima_volteada->pokemon->id) {
 		//jugada->coinciden = true;
 		carta_volteada->encontrado = true;
-		(*carta_anterior)->encontrado = true;
+		juego->ultima_volteada->encontrado = true;
 		juego->encontrados++;
 		if (juego->turno % 2 == 0)
 			juego->puntos_j2++;
@@ -247,9 +266,10 @@ void procesar_jugada(char *comando, juego_t *juego, carta_t **carta_anterior)
 	mostrar_cartas(juego);
 	sleep(1);
 	carta_volteada->seleccionada = false;
-	(*carta_anterior)->seleccionada = false;
-	*carta_anterior = NULL;
+	juego->ultima_volteada->seleccionada = false;
+	juego->ultima_volteada = NULL;
 	juego->turno++;
+	return true;
 }
 
 void juego_mostrar_resultados(juego_t *juego)
@@ -275,18 +295,12 @@ void juego_resetear(juego_t *juego)
 
 void loop_juego(juego_t *juego)
 {
-	carta_t *carta_volteada = NULL;
+	char mensaje_error[500] = "";
 	while (juego->encontrados < CANTIDAD_PARES) {
 		printf(ANSI_RESET_SCREEN);
 		mostrar_cartas(juego);
-		mostrar_jugadas(juego);
-		if (juego->turno % 2 == 0)
-			printf("Le toca al Jugador 2.\n");
-		else
-			printf("Le toca al Jugador 1.\n");
-		char *comando = leer_terminal(stdin);
-		procesar_jugada(comando, juego, &carta_volteada);
-		free(comando);
+		
+		leer_comando(procesar_jugada, juego, mensaje_error);
 	}
 	juego_mostrar_resultados(juego);
 	juego_resetear(juego);

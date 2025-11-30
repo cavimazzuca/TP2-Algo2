@@ -50,6 +50,7 @@ void leer_opciones_menu(menu_t *menu, char **msj_error)
 		printf(ANSI_RESET_SCREEN);
 		menu_mostrar(menu, mostrar_opcion, menu_ctx(menu));
 		printf("%s", *msj_error);
+		printf(ANSI_COLOR_RESET);
 		char *comando = leer_terminal(stdin);
 		*msj_error = "\n";
 		if (!menu_ejecutar(menu, comando))
@@ -59,11 +60,12 @@ void leer_opciones_menu(menu_t *menu, char **msj_error)
 	}
 }
 
-void leer_comando(menu_t *menu, bool (*f)(void *, void *), char *msj_error)
+void leer_comando(bool (*f)(char *, void *, char *), void *ctx, char *mensaje_error)
 {
+	printf("%s\n", mensaje_error);
 	char *comando = leer_terminal(stdin);
-	strcpy(msj_error, 0);
-
+	f(comando, ctx, mensaje_error);
+	free(comando);
 }
 
 
