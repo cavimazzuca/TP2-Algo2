@@ -18,6 +18,10 @@ bool menu_ejecutar(menu_t *menu, const char *comando);
 int menu_mostrar(menu_t *menu, void (*f)(const char *, const char *, void *),
 		 void *ctx);
 
+void menu_mostrar_titulo(menu_t *menu, void (*f)(char *, void *), void *ctx);
+
+void menu_cambiar_titulo(menu_t *menu, char *titulo);
+
 void menu_destruir(menu_t *menu);
 
 bool menu_esta_abierto(menu_t *menu);

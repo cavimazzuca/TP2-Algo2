@@ -14,14 +14,13 @@ struct menu {
 	int cantidad;
 	bool abierto;
 	void *ctx;
+	char *titulo;
 };
 
 menu_t *menu_crear(void *ctx)
 {
-	menu_t *menu = malloc(sizeof(menu_t));
+	menu_t *menu = calloc(1, sizeof(menu_t));
 	menu->opciones = malloc(sizeof(opcion_t));
-	menu->cantidad = 0;
-	menu->abierto = false;
 	menu->ctx = ctx;
 	return menu;
 }
@@ -64,6 +63,20 @@ int menu_mostrar(menu_t *menu, void (*f)(const char *, const char *, void *),
 		i++;
 	}
 	return i;
+}
+
+void menu_mostrar_titulo(menu_t *menu, void (*f)(char *, void *), void *ctx)
+{
+	if (menu == NULL || menu->titulo == NULL)
+		return;
+	f(menu->titulo, ctx);
+}
+
+void menu_cambiar_titulo(menu_t *menu, char *titulo)
+{
+	if (menu == NULL)
+		return;
+	menu->titulo = titulo;
 }
 
 void menu_destruir(menu_t *menu)

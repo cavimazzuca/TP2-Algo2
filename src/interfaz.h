@@ -11,10 +11,12 @@ char *leer_terminal(FILE *archivo);
 
 void print_estilo(const char *texto, enum estilo estilo);
 
-void leer_opciones_menu(menu_t *menu, char **msj_error);
-
 void mostrar_opcion(const char *texto, const char *comando, void *estilo_v);
 
 void leer_comando(bool (*f)(char *, void *, char *), void *ctx, char *mensaje_error);
+
+void interfaz_menu_entrar(menu_t *menu);
+
+void interfaz_menu_error(char* mensaje, enum estilo estilo);
 
 #endif // INTERFAZ_H_

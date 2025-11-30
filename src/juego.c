@@ -311,19 +311,11 @@ void juego_iniciar(juego_t *juego)
 	srand(juego->semilla);
 	juego->semilla = (unsigned int)time(NULL);
 	enum estilo estilo = ESTILO_NORMAL;
-	menu_t *menu = menu_crear(&estilo);
 	if (juego->tp1 == NULL) {
-		menu_agregar_opcion(menu, "Volver", "A", juego_cerrar, menu);
-		menu_abrir(menu);
-		char *msj_error = "\n";
-		msj_error = ANSI_COLOR_RED
-			"Se debe incluir un archivo antes de jugar.\n" ANSI_COLOR_RESET;
-		leer_opciones_menu(menu, &msj_error);
-		menu_destruir(menu);
+		interfaz_menu_error("Se debe incluir un archivo para jugar.", estilo);
 		return;
 	}
 	juego->ultimas_jugadas = lista_crear();
 	juego_meter_tp1(juego, juego->tp1);
 	loop_juego(juego);
-	menu_destruir(menu);
 }

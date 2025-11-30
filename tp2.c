@@ -9,22 +9,16 @@
 #include <time.h>
 #define ERROR -1
 
-bool ejecutar(char *comando, void *menu_v, char *mensaje_error)
-{
-	menu_t *menu = (menu_t *)menu_v;
-	return menu_ejecutar(menu, comando);
-}
+typedef struct tp2 {
+	menu_t *menu;
+	juego_t *juego;
+	enum estilo estilo;
+} tp2_t;
 
 void entrar_al_menu(void *menu_v)
 {
 	menu_t *menu = (menu_t *)menu_v;
-	menu_abrir(menu);
-	char *msj_error = "\n";
-	while (menu_esta_abierto(menu)) {
-		menu_mostrar(menu, mostrar_opcion, )
-		leer_comando(ejecutar, menu, msj_error);
-	}
-	//leer_opciones_menu(menu, &msj_error);
+	interfaz_menu_entrar(menu);
 }
 
 void salir_del_menu(void *menu_v)
@@ -32,21 +26,26 @@ void salir_del_menu(void *menu_v)
 	menu_cerrar((menu_t *)menu_v);
 }
 
-void cambiar_estilo(void *estilo_v)
+void cambiar_estilo(void *tp2_v)
 {
-	enum estilo *estilo = (enum estilo *)estilo_v;
-	switch (*estilo) {
+	tp2_t tp2 = *(tp2_t *)tp2_v;
+	enum estilo estilo = *(enum estilo *)(menu_ctx(tp2.menu));
+	switch (estilo) {
 	case ESTILO_NORMAL:
-		*estilo = ESTILO_2;
+		menu_cambiar_ctx(tp2.menu, ESTILO_2);
+		juego_cambiar_estilo(tp2.juego, ESTILO_2);
 		break;
 	case ESTILO_2:
-		*estilo = ESTILO_3;
+		menu_cambiar_ctx(tp2.menu, ESTILO_3);
+		juego_cambiar_estilo(tp2.juego, ESTILO_3);
 		break;
 	case ESTILO_3:
-		*estilo = ESTILO_NORMAL;
+		menu_cambiar_ctx(tp2.menu, ESTILO_NORMAL);
+		juego_cambiar_estilo(tp2.juego, ESTILO_NORMAL);
 		break;
 	default:
-		*estilo = ESTILO_NORMAL;
+		menu_cambiar_ctx(tp2.menu, ESTILO_NORMAL);
+		juego_cambiar_estilo(tp2.juego, ESTILO_NORMAL);
 	}
 }
 
@@ -85,13 +84,7 @@ void cargar_archivo(void *juego_v)
 	free(comando);
 }
 
-//menu que muestra un error y espera a que vuelvas
-void menu_error(char* mensaje, enum estilo *estilo)
-{
-	menu_t *menu_error = menu_crear(estilo);
-	menu_agregar_opcion(menu_error, "A", "Volver", salir_del_menu, menu_error);
-	leer_opciones_menu(menu_error, &mensaje);
-}
+
 
 void buscar_nombre(void *menu_v)
 {
@@ -117,6 +110,7 @@ int main(int argc, char *argv[])
 	}
 	enum estilo estilo = ESTILO_NORMAL;
 	menu_t *menu_principal = menu_crear(&estilo);
+	menu_cambiar_titulo(menu_principal, "TP2");
 	menu_t *menu_buscar = menu_crear(&estilo);
 	menu_t *menu_mostrar = menu_crear(&estilo);
 	tp1_t *tp1 = NULL;
@@ -124,6 +118,11 @@ int main(int argc, char *argv[])
 		tp1 = tp1_leer_archivo(archivo);
 	juego_t *juego = juego_crear(tp1);
 
+	tp2_t tp2;
+	tp2.menu = menu_principal;
+	tp2.juego = juego;
+	tp2.estilo = ESTILO_NORMAL;
+	
 	menu_agregar_opcion(menu_principal, "Cargar Archivo.", "C",
 			    cargar_archivo, juego);
 	menu_agregar_opcion(menu_principal, "Buscar.", "B", entrar_al_menu,
@@ -134,7 +133,7 @@ int main(int argc, char *argv[])
 	menu_agregar_opcion(menu_principal, "Jugar con semilla.", "S",
 			    jugar_con_semilla, juego);
 	menu_agregar_opcion(menu_principal, "Cambiar estilo.", "E",
-			    cambiar_estilo, menu_ctx(menu_principal));
+			    cambiar_estilo, &tp2);
 	menu_agregar_opcion(menu_principal, "Salir del juego.", "Q",
 			    salir_del_menu, menu_principal);
 	
