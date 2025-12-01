@@ -222,7 +222,7 @@ int main(int argc, char *argv[])
 	}
 	enum estilo estilo = ESTILO_NORMAL;
 	menu_t *menu_principal = menu_crear(&estilo);
-	menu_cambiar_titulo(menu_principal, "TP2");
+	menu_cambiar_titulo(menu_principal, ANSI_COLOR_BOLD ANSI_COLOR_YELLOW "TP2 - Juego de Memoria!");
 	menu_t *menu_buscar = menu_crear(&estilo);
 	menu_t *menu_mostrar = menu_crear(&estilo);
 	tp1_t *tp1 = NULL;

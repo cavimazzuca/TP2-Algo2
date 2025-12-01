@@ -7,8 +7,8 @@
 #include <stdio.h>
 #include "tp1.h"
 #include <unistd.h>
-#define CANTIDAD_PARES 3
-#define JUGADAS_MOSTRADAS 4
+#define CANTIDAD_PARES 9
+#define JUGADAS_MOSTRADAS 5
 
 typedef struct carta {
 	struct pokemon *pokemon;
@@ -21,6 +21,7 @@ typedef struct jugada {
 	char *num1;
 	char *num2;
 	bool coinciden;
+	int jugador;
 } jugada_t;
 
 struct juego {
@@ -176,21 +177,24 @@ void juego_cerrar(void *menu_v)
 	menu_cerrar(menu);
 }
 
-bool mostrar_jugada(void *jugada_v, void *extra)
+bool mostrar_jugada(void *jugada_v, void *estilo_v)
 {
 	jugada_t *jugada = (jugada_t *)jugada_v;
 	if (jugada == NULL)
 		return false;
+	enum estilo estilo = *(enum estilo *)estilo_v;
+	aplicar_estilo(estilo);
 	if (jugada->coinciden)
-		printf("%s -> %s :)\n", jugada->num1, jugada->num2);
+		printf("Jugador %i: %s -> %s :)\n", jugada->jugador, jugada->num1, jugada->num2);
 	else
-		printf("%s -> %s :(\n", jugada->num1, jugada->num2);
+		printf("Jugador %i: %s -> %s :(\n", jugada->jugador, jugada->num1, jugada->num2);
+	quitar_estilo();
 	return true;
 }
 
 void mostrar_jugadas(juego_t *juego)
 {
-	lista_con_cada_elemento(juego->ultimas_jugadas, mostrar_jugada, NULL);
+	lista_con_cada_elemento(juego->ultimas_jugadas, mostrar_jugada, &(juego->estilo));
 }
 
 bool mostrar_carta(char *clave, void *carta_v, void *contador_v)
@@ -226,6 +230,7 @@ bool mostrar_carta(char *clave, void *carta_v, void *contador_v)
 
 void mostrar_ultimas_jugadas(juego_t *juego)
 {
+	aplicar_estilo(juego->estilo);
 	printf("Últimas jugadas: \n");
 	size_t cantidad = lista_cantidad(juego->ultimas_jugadas);
 	for (size_t i = 0; i < JUGADAS_MOSTRADAS; i++) {
@@ -234,10 +239,11 @@ void mostrar_ultimas_jugadas(juego_t *juego)
 			exceso = cantidad - JUGADAS_MOSTRADAS;
 		void *jugada = lista_buscar_elemento(juego->ultimas_jugadas, exceso + i);
 		if (jugada != NULL)
-			mostrar_jugada(jugada, NULL);
+			mostrar_jugada(jugada, &juego->estilo);
 		else
 			printf("\n");
 	}
+	quitar_estilo();
 }
 
 void mostrar_cartas(juego_t *juego)
@@ -261,6 +267,7 @@ jugada_t *jugada_crear()
 	jugada_t *jugada = malloc(sizeof(jugada_t));
 	jugada->num1 = malloc(sizeof(char) * 4);
 	jugada->num2 = malloc(sizeof(char) * 4);
+	jugada->jugador = 1;
 	return jugada;
 }
 
@@ -291,6 +298,9 @@ bool procesar_jugada(char *comando, void *juego_v, char *mensaje_error)
 	strcpy(jugada->num1,juego->ultima_volteada->numero);
 	strcpy(jugada->num2,carta_volteada->numero);
 	jugada->coinciden = false;
+	jugada->jugador = 1;
+	if (juego->turno % 2 == 0) 
+		jugada->jugador = 2;
 	lista_agregar(juego->ultimas_jugadas, jugada);
 
 	carta_volteada->seleccionada = true;
@@ -326,8 +336,7 @@ void juego_mostrar_resultados(juego_t *juego)
 	quitar_estilo();
 	print_estilo("Jugadas: ", juego->estilo);
 	mostrar_jugadas(juego);
-	sleep(5);
-	//mostrar todas las jugadas separadas por jugador
+	free(leer_terminal(stdin));
 }
 
 void juego_resetear(juego_t *juego)
