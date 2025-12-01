@@ -1,4 +1,4 @@
-#include "nodo_lista/nodo.h"
+#include "nodo_lista/nodo_lista.h"
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -38,7 +38,7 @@ bool lista_agregar(lista_t *lista, void *dato)
 {
 	if (lista == NULL)
 		return false;
-	nodo_t *nuevo_nodo = nodo_crear(dato, NULL);
+	nodo_t *nuevo_nodo = nodo_lista_crear(dato, NULL);
 	if (nuevo_nodo == NULL)
 		return NULL;
 	if (lista->cabecera == NULL) {
@@ -68,7 +68,7 @@ void lista_destruir(lista_t *lista)
 	nodo_t *nodo = lista->cabecera;
 	while (nodo != NULL) {
 		lista->cabecera = nodo->siguiente;
-		nodo_destruir(nodo);
+		nodo_lista_destruir(nodo);
 		nodo = lista->cabecera;
 	}
 	free(lista);
@@ -121,7 +121,7 @@ bool lista_insertar(lista_t *lista, void *elemento, size_t posicion)
 			return NULL;
 		apuntado = anterior->siguiente;
 	}
-	nodo_nuevo = nodo_crear(elemento, apuntado);
+	nodo_nuevo = nodo_lista_crear(elemento, apuntado);
 	if (nodo_nuevo == NULL)
 		return false;
 	if (posicion != 0)
@@ -171,7 +171,7 @@ void *lista_eliminar_elemento(lista_t *lista, size_t posicion)
 		nodo_anterior->siguiente = nodo_eliminado->siguiente;
 	}
 	void *dato = nodo_eliminado->dato;
-	nodo_destruir(nodo_eliminado);
+	nodo_lista_destruir(nodo_eliminado);
 	lista->cantidad--;
 	return dato;
 }

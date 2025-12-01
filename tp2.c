@@ -7,12 +7,13 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include <time.h>
+#include <unistd.h>
 #define ERROR -1
 
 typedef struct tp2 {
 	menu_t *menu;
 	juego_t *juego;
-	enum estilo estilo;
+	enum estilo *estilo;
 } tp2_t;
 
 void entrar_al_menu(void *menu_v)
@@ -29,24 +30,22 @@ void salir_del_menu(void *menu_v)
 void cambiar_estilo(void *tp2_v)
 {
 	tp2_t tp2 = *(tp2_t *)tp2_v;
-	enum estilo estilo = *(enum estilo *)(menu_ctx(tp2.menu));
+	enum estilo estilo = *tp2.estilo;
 	switch (estilo) {
 	case ESTILO_NORMAL:
-		menu_cambiar_ctx(tp2.menu, ESTILO_2);
-		juego_cambiar_estilo(tp2.juego, ESTILO_2);
+		*tp2.estilo = ESTILO_2;
 		break;
 	case ESTILO_2:
-		menu_cambiar_ctx(tp2.menu, ESTILO_3);
-		juego_cambiar_estilo(tp2.juego, ESTILO_3);
+		*tp2.estilo = ESTILO_3;
 		break;
 	case ESTILO_3:
-		menu_cambiar_ctx(tp2.menu, ESTILO_NORMAL);
-		juego_cambiar_estilo(tp2.juego, ESTILO_NORMAL);
+		*tp2.estilo = ESTILO_NORMAL;
 		break;
 	default:
-		menu_cambiar_ctx(tp2.menu, ESTILO_NORMAL);
-		juego_cambiar_estilo(tp2.juego, ESTILO_NORMAL);
+		*tp2.estilo = ESTILO_NORMAL;
 	}
+	menu_cambiar_ctx(tp2.menu, tp2.estilo);
+	juego_cambiar_estilo(tp2.juego, *tp2.estilo);
 }
 
 void jugar(void *juego_v)
@@ -121,7 +120,7 @@ int main(int argc, char *argv[])
 	tp2_t tp2;
 	tp2.menu = menu_principal;
 	tp2.juego = juego;
-	tp2.estilo = ESTILO_NORMAL;
+	tp2.estilo = &estilo;
 	
 	menu_agregar_opcion(menu_principal, "Cargar Archivo.", "C",
 			    cargar_archivo, juego);

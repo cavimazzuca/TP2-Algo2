@@ -18,7 +18,7 @@ clang:
 	clang-format $(CLANGFLAGS) *.c src/*.c src/menu.h src/interfaz.h src/juego.h
 
 compilar_tp2:
-	$(CC) $(CFLAGS) src/*.c tp2.c -o tp2
+	$(CC) $(CFLAGS) src/*.c src/nodo_lista/*.c tp2.c -o tp2
 
 tp2: compilar_tp2
 	valgrind $(VALGRIND_FLAGS) ./tp2

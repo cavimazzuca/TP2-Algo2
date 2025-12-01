@@ -1,4 +1,4 @@
-#include "nodo.h"
+#include "nodo_lista.h"
 #include <stdlib.h>
 
 /*
@@ -6,7 +6,7 @@
  * Debe ser liberado usando destruir_nodo().
  * En caso de error devuelve NULL.
  */
-nodo_t *nodo_crear(void *dato, nodo_t *siguiente)
+nodo_t *nodo_lista_crear(void *dato, nodo_t *siguiente)
 {
 	nodo_t *nodo = malloc(sizeof(nodo_t));
 	if (nodo == NULL)
@@ -16,7 +16,7 @@ nodo_t *nodo_crear(void *dato, nodo_t *siguiente)
 	return nodo;
 }
 
-void nodo_destruir(nodo_t *nodo)
+void nodo_lista_destruir(nodo_t *nodo)
 {
 	if (nodo == NULL)
 		return;

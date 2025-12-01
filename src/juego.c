@@ -68,6 +68,8 @@ void carta_destruir(void *carta_v)
 
 void jugada_destruir(void *jugada_v)
 {
+	if (jugada_v == NULL)
+		return;
 	jugada_t *jugada = (jugada_t *)jugada_v;
 	free(jugada->num1);
 	free(jugada->num2);
@@ -105,6 +107,12 @@ juego_t *juego_crear(tp1_t *tp1)
 		return NULL;
 	juego->pokemones = hash_crear(CANTIDAD_PARES * 2);
 	if (juego->pokemones == NULL) {
+		free(juego);
+		return NULL;
+	}
+	juego->ultimas_jugadas = lista_crear();
+	if (juego->ultimas_jugadas == NULL) {
+		hash_destruir(juego->pokemones);
 		free(juego);
 		return NULL;
 	}
@@ -152,6 +160,7 @@ void juego_destruir(juego_t *juego)
 {
 	tp1_destruir(juego->tp1);
 	hash_destruir_todo(juego->pokemones, carta_destruir);
+	lista_destruir_todo(juego->ultimas_jugadas, jugada_destruir);
 	free(juego);
 }
 
@@ -161,8 +170,21 @@ void juego_cerrar(void *menu_v)
 	menu_cerrar(menu);
 }
 
+bool mostrar_jugada(void *jugada_v, void *extra)
+{
+	jugada_t *jugada = (jugada_t *)jugada_v;
+	if (jugada == NULL)
+		return false;
+	if (jugada->coinciden)
+		printf("%s -> %s :)\n", jugada->num1, jugada->num2);
+	else
+		printf("%s -> %s :(\n", jugada->num1, jugada->num2);
+	return true;
+}
+
 void mostrar_jugadas(juego_t *juego)
 {
+	lista_con_cada_elemento(juego->ultimas_jugadas, mostrar_jugada, NULL);
 }
 
 bool mostrar_carta(char *clave, void *carta_v, void *contador_v)
@@ -243,17 +265,15 @@ bool procesar_jugada(char *comando, void *juego_v, char *mensaje_error)
 		return false;
 	}
 
-	/*
-    jugada_t *jugada = jugada_crear();
-    strcpy(jugada->num1,(*carta_anterior)->numero);
-    strcpy(jugada->num2,carta_volteada->numero);
-    jugada->coinciden = false;
-    lista_agregar(juego->ultimas_jugadas, jugada);
-    */
+	jugada_t *jugada = jugada_crear();
+	strcpy(jugada->num1,juego->ultima_volteada->numero);
+	strcpy(jugada->num2,carta_volteada->numero);
+	jugada->coinciden = false;
+	lista_agregar(juego->ultimas_jugadas, jugada);
 
 	carta_volteada->seleccionada = true;
 	if (carta_volteada->pokemon->id == juego->ultima_volteada->pokemon->id) {
-		//jugada->coinciden = true;
+		jugada->coinciden = true;
 		carta_volteada->encontrado = true;
 		juego->ultima_volteada->encontrado = true;
 		juego->encontrados++;
@@ -289,7 +309,7 @@ void juego_resetear(juego_t *juego)
 	juego->puntos_j1 = 0;
 	juego->puntos_j2 = 0;
 	lista_destruir_todo(juego->ultimas_jugadas, jugada_destruir);
-	juego->ultimas_jugadas = NULL;
+	juego->ultimas_jugadas = lista_crear();
 	juego->turno = 1;
 }
 
@@ -299,7 +319,6 @@ void loop_juego(juego_t *juego)
 	while (juego->encontrados < CANTIDAD_PARES) {
 		printf(ANSI_RESET_SCREEN);
 		mostrar_cartas(juego);
-		
 		leer_comando(procesar_jugada, juego, mensaje_error);
 	}
 	juego_mostrar_resultados(juego);
@@ -310,12 +329,12 @@ void juego_iniciar(juego_t *juego)
 {
 	srand(juego->semilla);
 	juego->semilla = (unsigned int)time(NULL);
-	enum estilo estilo = ESTILO_NORMAL;
 	if (juego->tp1 == NULL) {
-		interfaz_menu_error("Se debe incluir un archivo para jugar.", estilo);
+		interfaz_menu_error("Se debe incluir un archivo para jugar.", juego->estilo);
 		return;
 	}
-	juego->ultimas_jugadas = lista_crear();
+	
+
 	juego_meter_tp1(juego, juego->tp1);
 	loop_juego(juego);
 }

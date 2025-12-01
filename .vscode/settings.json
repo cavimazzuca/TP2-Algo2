@@ -9,6 +9,7 @@
                 "tp1.h": "c",
                 "ctype.h": "c",
                 "unistd.h": "c",
-                "menu.h": "c"
+                "menu.h": "c",
+                "nodo_lista.h": "c"
         }
 }
