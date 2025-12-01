@@ -19,4 +19,8 @@ void interfaz_menu_entrar(menu_t *menu);
 
 void interfaz_menu_error(char* mensaje, enum estilo estilo);
 
+void aplicar_estilo(enum estilo estilo);
+
+void quitar_estilo();
+
 #endif // INTERFAZ_H_

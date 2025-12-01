@@ -312,11 +312,16 @@ bool procesar_jugada(char *comando, void *juego_v, char *mensaje_error)
 void juego_mostrar_resultados(juego_t *juego)
 {
 	printf(ANSI_RESET_SCREEN);
+	aplicar_estilo(juego->estilo);
 	printf("Jugador 1\n");
 	printf(" Puntaje: %i\n", juego->puntos_j1);
 	printf("Jugador 2\n");
 	printf(" Puntaje: %i\n", juego->puntos_j2);
-	sleep(2);
+	printf("\n");
+	quitar_estilo();
+	print_estilo("Jugadas: ", juego->estilo);
+	mostrar_jugadas(juego);
+	sleep(5);
 	//mostrar todas las jugadas separadas por jugador
 }
 

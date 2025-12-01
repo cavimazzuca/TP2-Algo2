@@ -4,6 +4,9 @@
 #include <string.h>
 #include <stdlib.h>
 
+#define E2_PREFIJO ANSI_BG_WHITE ANSI_COLOR_BLACK
+#define E3_PREFIJO ANSI_BG_RESET ANSI_COLOR_GREEN
+
 struct interfaz {
 	char *titulo;
 	menu_t *menu;
@@ -80,6 +83,22 @@ void leer_comando(bool (*f)(char *, void *, char *), void *ctx, char *mensaje_er
 	free(comando);
 }
 
+void aplicar_estilo(enum estilo estilo) {
+	switch (estilo) {
+		case ESTILO_NORMAL:
+			break;
+		case ESTILO_2:
+			printf(E2_PREFIJO);
+			break;
+		case ESTILO_3:
+			printf(E3_PREFIJO);
+			break;
+	}
+}
+
+void quitar_estilo() {
+	printf(ANSI_COLOR_RESET ANSI_BG_RESET);
+}
 
 void print_estilo(const char *texto, enum estilo estilo)
 {
@@ -89,6 +108,7 @@ void print_estilo(const char *texto, enum estilo estilo)
 		printf(ANSI_BG_WHITE ANSI_COLOR_BLACK "%s", texto);
 	if (estilo == ESTILO_3)
 		printf(ANSI_BG_RESET ANSI_COLOR_GREEN "%s", texto);
+	printf(ANSI_COLOR_RESET ANSI_BG_RESET);
 	printf("\n");
 }
 
