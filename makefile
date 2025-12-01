@@ -25,3 +25,6 @@ tp2: compilar_tp2
 
 tp2_archivo: compilar_tp2
 	valgrind $(VALGRIND_FLAGS) ./tp2 ejemplos/normal.csv
+
+tp2_largo: compilar_tp2
+	valgrind $(VALGRIND_FLAGS) ./tp2 ejemplos/largo.csv

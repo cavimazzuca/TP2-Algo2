@@ -14,6 +14,7 @@ typedef struct tp2 {
 	menu_t *menu;
 	juego_t *juego;
 	enum estilo *estilo;
+	tp1_t *tp1;
 } tp2_t;
 
 void entrar_al_menu(void *menu_v)
@@ -66,20 +67,24 @@ void jugar_con_semilla(void *juego_v)
 	return;
 }
 
-void cargar_archivo(void *juego_v)
+void cargar_archivo(void *tp2_v)
 {
+	tp2_t tp2 = *(tp2_t *)tp2_v;
 	printf(ANSI_RESET_SCREEN);
-	juego_t *juego = (juego_t *)juego_v;
+	juego_t *juego = tp2.juego;
 	printf("Escribe el archivo a cargar:\n");
 	char *comando = leer_terminal(stdin);
 	tp1_t *tp1 = tp1_leer_archivo(comando);
 	if (tp1 == NULL) {
 		printf("el archivo no existe.\n"); //no se va a mostrar.
+		free(comando);
 		return;
 	}
 	printf("%i\n", (int)tp1_cantidad(tp1));
 	juego_meter_tp1(juego, tp1);
-	tp1_destruir(tp1);
+	tp1_destruir((*(tp2_t *)tp2_v).tp1);
+	(*(tp2_t *)tp2_v).tp1  = tp1;
+	
 	free(comando);
 }
 
@@ -129,48 +134,83 @@ bool señalar_pokemon_id(char *id_char, void *tp1_v, char *mensaje_error)
 }
 
 
-void buscar_nombre(void *tp1_v)
+void buscar_nombre(void *tp2_v)
 {
+	tp2_t tp2 = *(tp2_t *)tp2_v;
+	tp1_t *tp1 = tp2.tp1;
 	printf(ANSI_RESET_SCREEN);
 	printf("Escribe el nombre de tu pokemon:\n");
 	char mensaje_error[500] = "";
-	while (!leer_comando(señalar_pokemon_nombre, tp1_v, mensaje_error)) {
+	while (!leer_comando(señalar_pokemon_nombre, tp1, mensaje_error)) {
 		printf(ANSI_RESET_SCREEN);
 		printf("Escribe el nombre de tu pokemon:\n");
 	}
 }
 
-void buscar_id(void *tp1_v)
+void buscar_id(void *tp2_v)
 {
+	tp2_t tp2 = *(tp2_t *)tp2_v;
+	tp1_t *tp1 = tp2.tp1;
 	printf(ANSI_RESET_SCREEN);
 	printf("Escribe la ID de tu pokemon:\n");
 	char mensaje_error[500] = "";
-	while (!leer_comando(señalar_pokemon_id, tp1_v, mensaje_error)) {
+	while (!leer_comando(señalar_pokemon_id, tp1, mensaje_error)) {
 		printf(ANSI_RESET_SCREEN);
 		printf("Escribe la ID de tu pokemon:\n");
 	}
 }
 
-void mostrar_id(void *tp1_v)
+void mostrar_id(void *tp2_v)
 {
-	tp1_t *tp1 = (tp1_t *)tp1_v;
+	tp2_t tp2 = *(tp2_t *)tp2_v;
+	tp1_t *tp1 = tp2.tp1;
 	printf(ANSI_RESET_SCREEN);
 	tp1_con_cada_pokemon(tp1, mostrar_pokemon, NULL);
 	free(leer_terminal(stdin));
 }
 
-iterar_alfabetico(tp1_t *tp1, bool (*f)(struct pokemon *, void *), void *ctx)
+bool alfabetico(struct pokemon *pokemon, void *poke_alfabetico_v)
+{
+	if (strcmp(pokemon->nombre, "") == 0) {
+		return true;
+	}
+	struct pokemon *poke_alfabetico = *(struct pokemon **)poke_alfabetico_v;
+	if (poke_alfabetico == NULL) {
+		*(struct pokemon **)poke_alfabetico_v = pokemon;
+		return true;
+	}
+	if (strcmp(pokemon->nombre, poke_alfabetico->nombre) <= 0) {
+		*(struct pokemon **)poke_alfabetico_v = pokemon;
+	}
+	return true;
+}
+
+struct pokemon *obtener_menos_alfabetico(tp1_t *tp1)
+{
+	struct pokemon *pokemon = NULL;
+	tp1_con_cada_pokemon(tp1, alfabetico, &pokemon);
+	return pokemon;
+}
+
+void mostrar_alfabetico(tp1_t *tp1, bool (*f)(struct pokemon *, void *), void *ctx)
 {
 	tp1_t *copia = tp1_union(tp1, tp1);
-	struct pokemon *pokemones[tp1_cantidad(tp1)];
+	struct pokemon *pokemon = NULL;
+	for (int i = 0; i < tp1_cantidad(tp1) - 1; i++) {
+		pokemon = obtener_menos_alfabetico(copia);
+		mostrar_pokemon(pokemon, NULL);
+		strcpy(pokemon->nombre,"");
+	}
+	tp1_destruir(copia);
 	
 }
 
-void mostrar_nombre(void *tp1_v)
+void mostrar_nombre(void *tp2_v)
 {
-	tp1_t *tp1 = (tp1_t *)tp1_v;
+	tp2_t tp2 = *(tp2_t *)tp2_v;
+	tp1_t *tp1 = tp2.tp1;
 	printf(ANSI_RESET_SCREEN);
-	iterar_alfabetico(tp1, mostrar_pokemon, NULL);
+	mostrar_alfabetico(tp1, mostrar_pokemon, NULL);
 	free(leer_terminal(stdin));
 }
 
@@ -194,9 +234,10 @@ int main(int argc, char *argv[])
 	tp2.menu = menu_principal;
 	tp2.juego = juego;
 	tp2.estilo = &estilo;
+	tp2.tp1 = tp1;
 	
 	menu_agregar_opcion(menu_principal, "Cargar Archivo.", "C",
-			    cargar_archivo, juego);
+			    cargar_archivo, &tp2);
 	menu_agregar_opcion(menu_principal, "Buscar.", "B", entrar_al_menu,
 			    menu_buscar);
 	menu_agregar_opcion(menu_principal, "Mostrar.", "M", entrar_al_menu,
@@ -210,23 +251,23 @@ int main(int argc, char *argv[])
 			    salir_del_menu, menu_principal);
 	
 	menu_agregar_opcion(menu_buscar, "Buscar por nombre.", "N",
-			    buscar_nombre, juego_tp1(juego));
+			    buscar_nombre, &tp2);
 	menu_agregar_opcion(menu_buscar, "Buscar por ID.", "I",
-			    buscar_id, tp1);
+			    buscar_id, &tp2);
 	menu_agregar_opcion(menu_buscar, "Volver al menú anterior.", "A",
 			    salir_del_menu, menu_buscar);
 
 
 	menu_agregar_opcion(menu_mostrar, "Mostrar por orden alfabético.", "N",
-			    mostrar_nombre, juego_tp1(juego));
+			    mostrar_nombre, &tp2);
 	menu_agregar_opcion(menu_mostrar, "Mostrar por orden de ID.", "I",
-			    mostrar_id, tp1);
+			    mostrar_id, &tp2);
 	menu_agregar_opcion(menu_mostrar, "Volver al menú anterior.", "A",
 			    salir_del_menu, menu_mostrar);
 	
 	entrar_al_menu(menu_principal);
 
-	tp1_destruir(tp1);
+	tp1_destruir(tp2.tp1);
 	juego_destruir(juego);
 	menu_destruir(menu_principal);
 	menu_destruir(menu_buscar);
