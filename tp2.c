@@ -84,21 +84,94 @@ void cargar_archivo(void *juego_v)
 }
 
 
-
-void buscar_nombre(void *menu_v)
+bool mostrar_pokemon(struct pokemon *pokemon, void *extra)
 {
-	menu_t *menu = (menu_t *)menu_v;
-	enum estilo estilo = *(enum estilo *)menu_ctx(menu);
-	printf(ANSI_RESET_SCREEN);
-	print_estilo("Escribe el nombre de tu pokemon:\n", estilo);
-	//char *comando = leer_terminal(stdin);
-	//if (!buscar_nombre_tp1(menu))
-	//free(comando);
-	printf(ANSI_RESET_SCREEN);
+	if (pokemon == NULL)
+		return true;
+	printf("ID: %i\n", pokemon->id);
+	printf("Nombre: %s\n", pokemon->nombre);
+	printf("Ataque: %i\n", pokemon->ataque);
+	printf("Defensa: %i\n", pokemon->defensa);
+	printf("Velocidad: %i\n", pokemon->velocidad);
+	printf("----------\n");
+	return true;
 }
 
-void buscar_id(void *tp1)
+bool señalar_pokemon_nombre(char *nombre, void *tp1_v, char *mensaje_error)
 {
+	tp1_t *tp1 = (tp1_t *)tp1_v;
+	struct pokemon *pokemon = tp1_buscar_nombre(tp1, nombre);
+	if (pokemon == NULL) {
+		strcpy(mensaje_error, ANSI_COLOR_RED "El pokemon indicado no existe." ANSI_COLOR_RESET);
+		return false;
+	}
+	printf(ANSI_RESET_SCREEN);
+	printf("Se encontró a tu pokemon!\n");
+	mostrar_pokemon(pokemon, NULL);
+	free(leer_terminal(stdin));
+	return true;
+}
+
+bool señalar_pokemon_id(char *id_char, void *tp1_v, char *mensaje_error)
+{
+	tp1_t *tp1 = (tp1_t *)tp1_v;
+	int id = atoi(id_char);
+	struct pokemon *pokemon = tp1_buscar_id(tp1, id);
+	if (pokemon == NULL) {
+		strcpy(mensaje_error, ANSI_COLOR_RED "El pokemon con esa ID no existe." ANSI_COLOR_RESET);
+		return false;
+	}
+	printf(ANSI_RESET_SCREEN);
+	printf("Se encontró a tu pokemon!\n");
+	mostrar_pokemon(pokemon, NULL);
+	free(leer_terminal(stdin));
+	return true;
+}
+
+
+void buscar_nombre(void *tp1_v)
+{
+	printf(ANSI_RESET_SCREEN);
+	printf("Escribe el nombre de tu pokemon:\n");
+	char mensaje_error[500] = "";
+	while (!leer_comando(señalar_pokemon_nombre, tp1_v, mensaje_error)) {
+		printf(ANSI_RESET_SCREEN);
+		printf("Escribe el nombre de tu pokemon:\n");
+	}
+}
+
+void buscar_id(void *tp1_v)
+{
+	printf(ANSI_RESET_SCREEN);
+	printf("Escribe la ID de tu pokemon:\n");
+	char mensaje_error[500] = "";
+	while (!leer_comando(señalar_pokemon_id, tp1_v, mensaje_error)) {
+		printf(ANSI_RESET_SCREEN);
+		printf("Escribe la ID de tu pokemon:\n");
+	}
+}
+
+void mostrar_id(void *tp1_v)
+{
+	tp1_t *tp1 = (tp1_t *)tp1_v;
+	printf(ANSI_RESET_SCREEN);
+	tp1_con_cada_pokemon(tp1, mostrar_pokemon, NULL);
+	free(leer_terminal(stdin));
+}
+
+iterar_alfabetico(tp1_t *tp1, bool (*f)(struct pokemon *, void *), void *ctx)
+{
+	tp1_t *copia = tp1_union(tp1, tp1);
+	struct pokemon *pokemones[tp1_cantidad(tp1)];
+	
+}
+
+void mostrar_nombre(void *tp1_v)
+{
+	tp1_t *tp1 = (tp1_t *)tp1_v;
+	printf(ANSI_RESET_SCREEN);
+	iterar_alfabetico(tp1, mostrar_pokemon, NULL);
+	free(leer_terminal(stdin));
 }
 
 int main(int argc, char *argv[])
@@ -137,12 +210,17 @@ int main(int argc, char *argv[])
 			    salir_del_menu, menu_principal);
 	
 	menu_agregar_opcion(menu_buscar, "Buscar por nombre.", "N",
-			    buscar_nombre, tp1);
+			    buscar_nombre, juego_tp1(juego));
 	menu_agregar_opcion(menu_buscar, "Buscar por ID.", "I",
 			    buscar_id, tp1);
 	menu_agregar_opcion(menu_buscar, "Volver al menú anterior.", "A",
 			    salir_del_menu, menu_buscar);
-	
+
+
+	menu_agregar_opcion(menu_mostrar, "Mostrar por orden alfabético.", "N",
+			    mostrar_nombre, juego_tp1(juego));
+	menu_agregar_opcion(menu_mostrar, "Mostrar por orden de ID.", "I",
+			    mostrar_id, tp1);
 	menu_agregar_opcion(menu_mostrar, "Volver al menú anterior.", "A",
 			    salir_del_menu, menu_mostrar);
 	

@@ -13,7 +13,7 @@ void print_estilo(const char *texto, enum estilo estilo);
 
 void mostrar_opcion(const char *texto, const char *comando, void *estilo_v);
 
-void leer_comando(bool (*f)(char *, void *, char *), void *ctx, char *mensaje_error);
+bool leer_comando(bool (*f)(char *, void *, char *), void *ctx, char *mensaje_error);
 
 void interfaz_menu_entrar(menu_t *menu);
 

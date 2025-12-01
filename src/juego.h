@@ -19,4 +19,6 @@ void juego_destruir(juego_t *juego);
 
 void juego_cambiar_estilo(juego_t *juego, enum estilo estilo);
 
+tp1_t *juego_tp1(juego_t *juego);
+
 #endif // JUEGO_H_

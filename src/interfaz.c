@@ -75,12 +75,13 @@ void interfaz_menu_entrar(menu_t *menu)
 	}
 }
 
-void leer_comando(bool (*f)(char *, void *, char *), void *ctx, char *mensaje_error)
+bool leer_comando(bool (*f)(char *, void *, char *), void *ctx, char *mensaje_error)
 {
 	printf("%s\n", mensaje_error);
 	char *comando = leer_terminal(stdin);
-	f(comando, ctx, mensaje_error);
+	bool valor = f(comando, ctx, mensaje_error);
 	free(comando);
+	return valor;
 }
 
 void aplicar_estilo(enum estilo estilo) {

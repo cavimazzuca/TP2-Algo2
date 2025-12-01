@@ -36,6 +36,11 @@ struct juego {
 	unsigned int semilla;
 };
 
+tp1_t *juego_tp1(juego_t *juego)
+{
+	return juego->tp1;
+}
+
 int posicion_aleatoria(hash_t *hash)
 {
 	int random = rand() % (CANTIDAD_PARES * 2);
