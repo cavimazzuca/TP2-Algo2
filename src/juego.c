@@ -8,6 +8,7 @@
 #include "tp1.h"
 #include <unistd.h>
 #define CANTIDAD_PARES 3
+#define JUGADAS_MOSTRADAS 4
 
 typedef struct carta {
 	struct pokemon *pokemon;
@@ -218,6 +219,22 @@ bool mostrar_carta(char *clave, void *carta_v, void *contador_v)
 	return true;
 }
 
+void mostrar_ultimas_jugadas(juego_t *juego)
+{
+	printf("Últimas jugadas: \n");
+	size_t cantidad = lista_cantidad(juego->ultimas_jugadas);
+	for (size_t i = 0; i < JUGADAS_MOSTRADAS; i++) {
+		size_t exceso = 0;
+		if (cantidad >= JUGADAS_MOSTRADAS)
+			exceso = cantidad - JUGADAS_MOSTRADAS;
+		void *jugada = lista_buscar_elemento(juego->ultimas_jugadas, exceso + i);
+		if (jugada != NULL)
+			mostrar_jugada(jugada, NULL);
+		else
+			printf("\n");
+	}
+}
+
 void mostrar_cartas(juego_t *juego)
 {
 	for (int i = 0; i < CANTIDAD_PARES * 2; i++) {
@@ -227,11 +244,11 @@ void mostrar_cartas(juego_t *juego)
 		mostrar_carta(num_carta, carta, &i);
 	}
 	printf("\n");
-	mostrar_jugadas(juego);
+	mostrar_ultimas_jugadas(juego);
 	if (juego->turno % 2 == 0)
-		print_estilo("Le toca al Jugador 2.\n", juego->estilo);
+		print_estilo("Le toca al Jugador 2.", juego->estilo);
 	else
-		print_estilo("Le toca al Jugador 1.\n", juego->estilo);	
+		print_estilo("Le toca al Jugador 1.", juego->estilo);	
 }
 
 jugada_t *jugada_crear()
