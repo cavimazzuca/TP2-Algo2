@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include "tp1.h"
 #include <unistd.h>
-#define CANTIDAD_PARES 3
+#define CANTIDAD_PARES 9
 #define JUGADAS_MOSTRADAS 5
 
 typedef struct carta {

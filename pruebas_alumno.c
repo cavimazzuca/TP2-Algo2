@@ -29,9 +29,32 @@ void pruebas_menu()
 	menu_destruir(menu);
 }
 
+void pruebas_menu_null()
+{
+	
+	pa2m_afirmar(menu_mostrar(NULL, mostrar, NULL) == 0,
+		     "No se puede mostrar un menú nulo.");
+	pa2m_afirmar(menu_agregar_opcion(NULL, "Opcion A", "A", funcion, NULL) == false,
+		"No se puede agregar una opción a un menú nulo.");
+	pa2m_afirmar(menu_ejecutar(NULL, "A") == false,
+		     "No se puede ejecutar en un menú nulo.");
+}
+
+void pruebas_juego()
+{
+	juego_t *juego = juego_crear(NULL);
+	pa2m_afirmar(juego != NULL, "Se crea un juego.");
+	tp1_t *tp1 = tp1_leer_archivo("ejemplos/normal.csv");
+	pa2m_afirmar(juego_meter_tp1(juego, tp1) == true, "Se inserta un tp dentro del juego.");
+	tp1_destruir(tp1);
+	juego_destruir(juego);
+}
+
 int main()
 {
 	pa2m_nuevo_grupo("===== PRUEBAS MENU =====");
 	pruebas_menu();
+	pruebas_menu_null();
 	pa2m_nuevo_grupo("===== PRUEBAS JUEGO =====");
+	pruebas_juego();
 }
