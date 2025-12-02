@@ -28,7 +28,7 @@ Para iniciar el juego, puede invocarse tp2 con el archivo de pokedex a utilizar 
 
 El juego es un clásico juego de memoria. Se presentan 18 cartas boca abajo (tomadas al azar del archivo cargado), cada una identificada por un numero. Los jugadores van tomando turnos y seleccionan dos cartas. Se muestran ambas cartas (por ejemplo Pikachu y Charmander). Si las cartas son iguales, el jugador gana un punto y puede seguir seleccionando pares. Si son diferentes, se pasa el turno al otro jugador.
 
-Cada vez que se forma un par, dicho par queda eliminado. El juego termina cuando no hay mas pares.
+Cada vez que se forma un par, dicho par queda eliminado. El juego termina cuando no hay mas pares.  
 
 <div align="center">
 <img width="70%" src="img/juego.svg">

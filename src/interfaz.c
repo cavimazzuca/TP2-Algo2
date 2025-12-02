@@ -7,13 +7,19 @@
 #define E2_PREFIJO ANSI_BG_WHITE ANSI_COLOR_BLACK
 #define E3_PREFIJO ANSI_BG_RESET ANSI_COLOR_GREEN
 
-struct interfaz {
-	char *titulo;
-	menu_t *menu;
-	char *pie;
-	enum estilo estilo;
-};
-
+void mostrar_opcion(const char *texto, const char *comando, void *estilo_v)
+{
+	enum estilo estilo = *(enum estilo *)estilo_v;
+	if (estilo == ESTILO_NORMAL)
+		printf("%s. %s\n", comando, texto);
+	if (estilo == ESTILO_2)
+		printf(ANSI_BG_WHITE ANSI_COLOR_BLACK "%s. %s\n", comando,
+		       texto);
+	if (estilo == ESTILO_3)
+		printf(ANSI_BG_RESET ANSI_COLOR_GREEN "%s. %s\n", comando,
+		       texto);
+	printf(ANSI_COLOR_RESET);
+}
 
 //Función reutiizada de TP1
 char *leer_terminal(FILE *archivo)
@@ -113,19 +119,6 @@ void print_estilo(const char *texto, enum estilo estilo)
 	printf("\n");
 }
 
-void mostrar_opcion(const char *texto, const char *comando, void *estilo_v)
-{
-	enum estilo estilo = *(enum estilo *)estilo_v;
-	if (estilo == ESTILO_NORMAL)
-		printf("%s. %s\n", comando, texto);
-	if (estilo == ESTILO_2)
-		printf(ANSI_BG_WHITE ANSI_COLOR_BLACK "%s. %s\n", comando,
-		       texto);
-	if (estilo == ESTILO_3)
-		printf(ANSI_BG_RESET ANSI_COLOR_GREEN "%s. %s\n", comando,
-		       texto);
-	printf(ANSI_COLOR_RESET);
-}
 
 void interfaz_salir_menu(void *menu_v)
 {

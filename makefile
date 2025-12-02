@@ -9,7 +9,7 @@ valgrind-alumno: pruebas_alumno
 	valgrind $(VALGRIND_FLAGS) ./pruebas_alumno
 
 pruebas_alumno:
-	$(CC) $(CFLAGS) src/*.c pruebas_alumno.c -o pruebas_alumno
+	$(CC) $(CFLAGS) src/*.c src/nodo_lista/*.c pruebas_alumno.c -o pruebas_alumno
 
 clean:
 	rm -f pruebas_alumno

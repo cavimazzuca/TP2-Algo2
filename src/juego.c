@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include "tp1.h"
 #include <unistd.h>
-#define CANTIDAD_PARES 9
+#define CANTIDAD_PARES 3
 #define JUGADAS_MOSTRADAS 5
 
 typedef struct carta {
@@ -36,11 +36,6 @@ struct juego {
 	lista_t *ultimas_jugadas;
 	unsigned int semilla;
 };
-
-tp1_t *juego_tp1(juego_t *juego)
-{
-	return juego->tp1;
-}
 
 int posicion_aleatoria(hash_t *hash)
 {
