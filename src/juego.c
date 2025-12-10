@@ -104,9 +104,9 @@ bool meter_en_hash(struct pokemon *pokemon, void *hash)
 juego_t *juego_crear(tp1_t *tp1)
 {
 	juego_t *juego = calloc(1, sizeof(juego_t));
-	juego->semilla = (unsigned int)time(NULL);
 	if (juego == NULL)
 		return NULL;
+	juego->semilla = (unsigned int)time(NULL);
 	juego->pokemones = hash_crear(CANTIDAD_PARES * 2);
 	if (juego->pokemones == NULL) {
 		free(juego);
@@ -132,12 +132,12 @@ tp1_t *copiar_tp1(tp1_t *tp1)
 
 bool juego_meter_tp1(juego_t *juego, tp1_t *copia)
 {
+	if (juego == NULL)
+		return false;
 	if (copia == NULL) {
 		juego->tp1 = NULL;
 		return false;
 	}
-	if (juego == NULL)
-		return false;
 	if (tp1_cantidad(copia) < CANTIDAD_PARES) {
 		printf("Hay muy pocos pokemones para jugar.\n");
 		return false;
@@ -153,9 +153,13 @@ bool juego_meter_tp1(juego_t *juego, tp1_t *copia)
 	return true;
 }
 
-void cambiar_semilla(juego_t *juego, int semilla)
+int cambiar_semilla(juego_t *juego, int semilla)
 {
+	if (juego == NULL)
+		return 0;
+	int aux = (int)juego->semilla;
 	juego->semilla = (unsigned int)semilla;
+	return aux;
 }
 
 void juego_destruir(juego_t *juego)

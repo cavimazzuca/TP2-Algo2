@@ -11,7 +11,7 @@ juego_t *juego_crear(tp1_t *tp1);
 
 bool juego_meter_tp1(juego_t *juego, tp1_t *tp1);
 
-void cambiar_semilla(juego_t *juego, int semilla);
+int cambiar_semilla(juego_t *juego, int semilla);
 
 void juego_iniciar(juego_t *juego);
 
