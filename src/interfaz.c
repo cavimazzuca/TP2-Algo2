@@ -57,10 +57,11 @@ bool ejecutar(char *comando, void *menu_v, char *mensaje_error)
 {
 	menu_t *menu = (menu_t *)menu_v;
 	if (!menu_ejecutar(menu, comando))
-		strcpy(mensaje_error, ANSI_COLOR_RED "No se encontró el comando especificado." ANSI_COLOR_RESET);
+		strcpy(mensaje_error, ANSI_COLOR_RED
+		       "No se encontró el comando especificado." ANSI_COLOR_RESET);
 	else
 		strcpy(mensaje_error, "");
-	return true;	
+	return true;
 }
 
 void mostrar_titulo(char *titulo, void *estilo_v)
@@ -81,8 +82,11 @@ void interfaz_menu_entrar(menu_t *menu)
 	}
 }
 
-bool leer_comando(bool (*f)(char *, void *, char *), void *ctx, char *mensaje_error)
+bool leer_comando(bool (*f)(char *, void *, char *), void *ctx,
+		  char *mensaje_error)
 {
+	if (f == NULL)
+		return false;
 	printf("%s\n", mensaje_error);
 	char *comando = leer_terminal(stdin);
 	bool valor = f(comando, ctx, mensaje_error);
@@ -90,46 +94,52 @@ bool leer_comando(bool (*f)(char *, void *, char *), void *ctx, char *mensaje_er
 	return valor;
 }
 
-void aplicar_estilo(enum estilo estilo) {
+void aplicar_estilo(enum estilo estilo)
+{
 	switch (estilo) {
-		case ESTILO_NORMAL:
-			break;
-		case ESTILO_2:
-			printf(E2_PREFIJO);
-			break;
-		case ESTILO_3:
-			printf(E3_PREFIJO);
-			break;
+	case ESTILO_NORMAL:
+		break;
+	case ESTILO_2:
+		printf(E2_PREFIJO);
+		break;
+	case ESTILO_3:
+		printf(E3_PREFIJO);
+		break;
 	}
 }
 
-void quitar_estilo() {
+void quitar_estilo()
+{
 	printf(ANSI_COLOR_RESET ANSI_BG_RESET);
 }
 
 void print_estilo(const char *texto, enum estilo estilo)
 {
-	if (estilo == ESTILO_NORMAL)
-		printf("%s", texto);
-	if (estilo == ESTILO_2)
+	switch (estilo) {
+	case ESTILO_2:
 		printf(ANSI_BG_WHITE ANSI_COLOR_BLACK "%s", texto);
-	if (estilo == ESTILO_3)
+		break;
+	case ESTILO_3:
 		printf(ANSI_BG_RESET ANSI_COLOR_GREEN "%s", texto);
+		break;
+	default:
+		printf("%s", texto);
+	}
 	printf(ANSI_COLOR_RESET ANSI_BG_RESET);
 	printf("\n");
 }
-
 
 void interfaz_salir_menu(void *menu_v)
 {
 	menu_cerrar((menu_t *)menu_v);
 }
 
-void interfaz_menu_error(char* mensaje, enum estilo estilo)
+void interfaz_menu_error(char *mensaje, enum estilo estilo)
 {
 	menu_t *menu_error = menu_crear(&estilo);
 	menu_cambiar_titulo(menu_error, mensaje);
-	menu_agregar_opcion(menu_error, "Volver", "A", interfaz_salir_menu, menu_error);
+	menu_agregar_opcion(menu_error, "Volver", "A", interfaz_salir_menu,
+			    menu_error);
 	interfaz_menu_entrar(menu_error);
 	menu_destruir(menu_error);
 }

@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include "tp1.h"
 #include <unistd.h>
-#define CANTIDAD_PARES 9
+#define CANTIDAD_PARES 3
 #define JUGADAS_MOSTRADAS 5
 
 typedef struct carta {
@@ -39,18 +39,19 @@ struct juego {
 
 int posicion_aleatoria(hash_t *hash)
 {
-	int random = rand() % (CANTIDAD_PARES * 2);
 	char num_carta[4];
-	snprintf(num_carta, sizeof(num_carta), "%d", random);
-	while (hash_contiene(hash, num_carta)) {
+	int random = 0;
+	do {
 		random = rand() % (CANTIDAD_PARES * 2);
 		snprintf(num_carta, sizeof(num_carta), "%d", random);
-	}
+	} while (hash_contiene(hash, num_carta));
 	return random;
 }
 
 void juego_cambiar_estilo(juego_t *juego, enum estilo estilo)
 {
+	if (juego == NULL)
+		return;
 	juego->estilo = estilo;
 }
 
@@ -82,23 +83,23 @@ bool meter_en_hash(struct pokemon *pokemon, void *hash)
 {
 	if (hash_cantidad(hash) >= (CANTIDAD_PARES * 2))
 		return false;
-	int random = posicion_aleatoria(hash);
+	int random = 0;
 	char num_carta[4];
-	snprintf(num_carta, sizeof(num_carta), "%d", random);
-	carta_t *carta1 = carta_crear();
-	carta_t *carta2 = carta_crear();
-	carta1->pokemon = pokemon;
-	carta2->pokemon = pokemon;
-	strcpy(carta1->numero, num_carta);
+	bool insertado = false;
+	carta_t *carta;
+	for(int i = 0; i < 2; i++) {
+		random = posicion_aleatoria(hash);
+		snprintf(num_carta, sizeof(num_carta), "%d", random);
 
-	bool insertado = hash_insertar((hash_t *)hash, num_carta, carta1, NULL);
-	if (!insertado)
-		return false;
-	random = posicion_aleatoria(hash);
-	snprintf(num_carta, sizeof(num_carta), "%d", random);
-	strcpy(carta2->numero, num_carta);
-	insertado = hash_insertar((hash_t *)hash, num_carta, carta2, NULL);
-	return insertado;
+		carta = carta_crear();
+		carta->pokemon = pokemon;
+		strcpy(carta->numero, num_carta);
+
+		insertado = hash_insertar((hash_t *)hash, num_carta, carta, NULL);
+		if (!insertado)
+			return false;
+	}
+	return true;
 }
 
 juego_t *juego_crear(tp1_t *tp1)
@@ -106,18 +107,12 @@ juego_t *juego_crear(tp1_t *tp1)
 	juego_t *juego = calloc(1, sizeof(juego_t));
 	if (juego == NULL)
 		return NULL;
-	juego->semilla = (unsigned int)time(NULL);
-	juego->pokemones = hash_crear(CANTIDAD_PARES * 2);
-	if (juego->pokemones == NULL) {
-		free(juego);
-		return NULL;
-	}
 	juego->ultimas_jugadas = lista_crear();
 	if (juego->ultimas_jugadas == NULL) {
-		hash_destruir(juego->pokemones);
 		free(juego);
 		return NULL;
 	}
+	juego->semilla = (unsigned int)time(NULL);
 	juego->turno = 1;
 	juego_meter_tp1(juego, tp1);
 	juego->estilo = ESTILO_NORMAL;
@@ -130,6 +125,27 @@ tp1_t *copiar_tp1(tp1_t *tp1)
 	return copia;
 }
 
+void meter_en_lista(struct pokemon *pokemon, void *lista)
+{
+	lista_t *pokemones = (lista_t *)lista;
+	lista_agregar(pokemones, pokemon);
+}
+
+/*
+void tp1_meter_aleatoriamente(tp1_t *tp1, hash_t *hash)
+{
+	int posicion = rand() % tp1_cantidad(tp1);
+	lista_t *pokemones = lista_crear();
+	tp1_con_cada_pokemon(tp1, meter_en_lista, NULL);
+	bool posiciones[tp1_cantidad(tp1)];
+	for (int i = 0; i < tp1_cantidad(tp1); i++) {
+		posiciones[i] = true;
+	}
+	for (int i = 0; i < tp1_cantidad(tp1); i++) {
+
+	}
+}*/
+
 bool juego_meter_tp1(juego_t *juego, tp1_t *copia)
 {
 	if (juego == NULL)
@@ -138,17 +154,18 @@ bool juego_meter_tp1(juego_t *juego, tp1_t *copia)
 		juego->tp1 = NULL;
 		return false;
 	}
-	if (tp1_cantidad(copia) < CANTIDAD_PARES) {
-		printf("Hay muy pocos pokemones para jugar.\n");
+	if (tp1_cantidad(copia) < CANTIDAD_PARES)
 		return false;
-	}
 	tp1_t *tp1 = copiar_tp1(copia);
+	if (tp1 == NULL)
+		return false;
 	tp1_destruir(juego->tp1);
 	hash_destruir_todo(juego->pokemones, carta_destruir);
 	juego->pokemones = hash_crear(CANTIDAD_PARES * 2);
 	juego->tp1 = tp1;
 	if (tp1 == NULL)
 		return false;
+	//tp1_meter_aleatoriamente(tp1,)
 	tp1_con_cada_pokemon(tp1, meter_en_hash, juego->pokemones);
 	return true;
 }
@@ -164,16 +181,12 @@ int cambiar_semilla(juego_t *juego, int semilla)
 
 void juego_destruir(juego_t *juego)
 {
+	if (juego == NULL)
+		return;
 	tp1_destruir(juego->tp1);
 	hash_destruir_todo(juego->pokemones, carta_destruir);
 	lista_destruir_todo(juego->ultimas_jugadas, jugada_destruir);
 	free(juego);
-}
-
-void juego_cerrar(void *menu_v)
-{
-	menu_t *menu = (menu_t *)menu_v;
-	menu_cerrar(menu);
 }
 
 bool mostrar_jugada(void *jugada_v, void *estilo_v)
@@ -207,21 +220,11 @@ bool mostrar_carta(char *clave, void *carta_v, void *contador_v)
 	if (carta->encontrado) {
 		printf(ANSI_COLOR_GREEN);
 		printf("%s", carta->pokemon->nombre);
-		printf(ANSI_COLOR_RESET);
-		printf(" ] ");
-		return true;
-	}
-
-	if (carta->seleccionada) {
+	} else if (carta->seleccionada) {
 		printf(ANSI_COLOR_BLUE);
 		printf("%s", carta->pokemon->nombre);
-		printf(ANSI_COLOR_RESET);
-		printf(" ] ");
-		return true;
-	}
-
-	printf("%s", clave);
-
+	} else
+		printf("%s", clave);
 	printf(ANSI_COLOR_RESET);
 	printf(" ] ");
 	return true;
@@ -270,16 +273,23 @@ jugada_t *jugada_crear()
 	return jugada;
 }
 
+void añadir_jugada(jugada_t *jugada, carta_t *nueva, carta_t *anterior)
+{
+	strcpy(jugada->num1,anterior->numero);
+	strcpy(jugada->num2,nueva->numero);
+	jugada->coinciden = false;
+	jugada->jugador = 1;
+}
+
 bool procesar_jugada(char *comando, void *juego_v, char *mensaje_error)
 {
 	juego_t *juego = (juego_t *)juego_v;
 	carta_t *carta_volteada = hash_buscar(juego->pokemones, comando);
-	strcpy(mensaje_error, "");
 	if (carta_volteada == NULL) {
 		strcpy(mensaje_error, ANSI_COLOR_RED "Debes seleccionar una carta válida." ANSI_COLOR_RESET);
 		return false;
 	}
-	if (carta_volteada->encontrado) {
+	if (carta_volteada->encontrado || carta_volteada == juego->ultima_volteada) {
 		strcpy(mensaje_error, ANSI_COLOR_RED "La carta seleccionada ya ha sido volteada." ANSI_COLOR_RESET);
 		return false;
 	}
@@ -288,16 +298,9 @@ bool procesar_jugada(char *comando, void *juego_v, char *mensaje_error)
 		carta_volteada->seleccionada = true;
 		return true;
 	}
-	if (carta_volteada == juego->ultima_volteada) {
-		strcpy(mensaje_error, ANSI_COLOR_RED "La carta seleccionada ya ha sido volteada." ANSI_COLOR_RESET);
-		return false;
-	}
 
 	jugada_t *jugada = jugada_crear();
-	strcpy(jugada->num1,juego->ultima_volteada->numero);
-	strcpy(jugada->num2,carta_volteada->numero);
-	jugada->coinciden = false;
-	jugada->jugador = 1;
+	añadir_jugada(jugada, carta_volteada, juego->ultima_volteada);
 	if (juego->turno % 2 == 0) 
 		jugada->jugador = 2;
 	lista_agregar(juego->ultimas_jugadas, jugada);
@@ -362,10 +365,12 @@ void loop_juego(juego_t *juego)
 
 void juego_iniciar(juego_t *juego)
 {
+	if (juego == NULL)
+		return;
 	srand(juego->semilla);
 	juego->semilla = (unsigned int)time(NULL);
 	if (juego->tp1 == NULL) {
-		interfaz_menu_error("Se debe incluir un archivo para jugar.", juego->estilo);
+		interfaz_menu_error("No se ha podido iniciar el juego.\nAsegurate de cargar un archivo válido.", juego->estilo);
 		return;
 	}
 	

@@ -9,6 +9,7 @@
 #include <time.h>
 #include <unistd.h>
 #define ERROR -1
+#define CANTIDAD_PARES 9
 
 typedef struct tp2 {
 	menu_t *menu;
@@ -83,11 +84,10 @@ void cargar_archivo(void *tp2_v)
 	printf("%i\n", (int)tp1_cantidad(tp1));
 	juego_meter_tp1(juego, tp1);
 	tp1_destruir((*(tp2_t *)tp2_v).tp1);
-	(*(tp2_t *)tp2_v).tp1  = tp1;
-	
+	(*(tp2_t *)tp2_v).tp1 = tp1;
+
 	free(comando);
 }
-
 
 bool mostrar_pokemon(struct pokemon *pokemon, void *extra)
 {
@@ -107,7 +107,8 @@ bool señalar_pokemon_nombre(char *nombre, void *tp1_v, char *mensaje_error)
 	tp1_t *tp1 = (tp1_t *)tp1_v;
 	struct pokemon *pokemon = tp1_buscar_nombre(tp1, nombre);
 	if (pokemon == NULL) {
-		strcpy(mensaje_error, ANSI_COLOR_RED "El pokemon indicado no existe." ANSI_COLOR_RESET);
+		strcpy(mensaje_error, ANSI_COLOR_RED
+		       "El pokemon indicado no existe." ANSI_COLOR_RESET);
 		return false;
 	}
 	printf(ANSI_RESET_SCREEN);
@@ -123,7 +124,8 @@ bool señalar_pokemon_id(char *id_char, void *tp1_v, char *mensaje_error)
 	int id = atoi(id_char);
 	struct pokemon *pokemon = tp1_buscar_id(tp1, id);
 	if (pokemon == NULL) {
-		strcpy(mensaje_error, ANSI_COLOR_RED "El pokemon con esa ID no existe." ANSI_COLOR_RESET);
+		strcpy(mensaje_error, ANSI_COLOR_RED
+		       "El pokemon con esa ID no existe." ANSI_COLOR_RESET);
 		return false;
 	}
 	printf(ANSI_RESET_SCREEN);
@@ -132,7 +134,6 @@ bool señalar_pokemon_id(char *id_char, void *tp1_v, char *mensaje_error)
 	free(leer_terminal(stdin));
 	return true;
 }
-
 
 void buscar_nombre(void *tp2_v)
 {
@@ -192,17 +193,17 @@ struct pokemon *obtener_menos_alfabetico(tp1_t *tp1)
 	return pokemon;
 }
 
-void mostrar_alfabetico(tp1_t *tp1, bool (*f)(struct pokemon *, void *), void *ctx)
+void mostrar_alfabetico(tp1_t *tp1, bool (*f)(struct pokemon *, void *),
+			void *ctx)
 {
 	tp1_t *copia = tp1_union(tp1, tp1);
 	struct pokemon *pokemon = NULL;
 	for (int i = 0; i < tp1_cantidad(tp1) - 1; i++) {
 		pokemon = obtener_menos_alfabetico(copia);
 		mostrar_pokemon(pokemon, NULL);
-		strcpy(pokemon->nombre,"");
+		strcpy(pokemon->nombre, "");
 	}
 	tp1_destruir(copia);
-	
 }
 
 void mostrar_nombre(void *tp2_v)
@@ -222,7 +223,8 @@ int main(int argc, char *argv[])
 	}
 	enum estilo estilo = ESTILO_NORMAL;
 	menu_t *menu_principal = menu_crear(&estilo);
-	menu_cambiar_titulo(menu_principal, ANSI_COLOR_BOLD ANSI_COLOR_YELLOW "TP2 - Juego de Memoria Pokemon" ANSI_COLOR_RESET);
+	menu_cambiar_titulo(menu_principal, ANSI_COLOR_BOLD ANSI_COLOR_YELLOW
+			    "TP2 - Juego de Memoria Pókemon" ANSI_COLOR_RESET);
 	menu_t *menu_buscar = menu_crear(&estilo);
 	menu_t *menu_mostrar = menu_crear(&estilo);
 	tp1_t *tp1 = NULL;
@@ -235,7 +237,7 @@ int main(int argc, char *argv[])
 	tp2.juego = juego;
 	tp2.estilo = &estilo;
 	tp2.tp1 = tp1;
-	
+
 	menu_agregar_opcion(menu_principal, "Cargar Archivo.", "C",
 			    cargar_archivo, &tp2);
 	menu_agregar_opcion(menu_principal, "Buscar.", "B", entrar_al_menu,
@@ -249,14 +251,13 @@ int main(int argc, char *argv[])
 			    cambiar_estilo, &tp2);
 	menu_agregar_opcion(menu_principal, "Salir del juego.", "Q",
 			    salir_del_menu, menu_principal);
-	
+
 	menu_agregar_opcion(menu_buscar, "Buscar por nombre.", "N",
 			    buscar_nombre, &tp2);
-	menu_agregar_opcion(menu_buscar, "Buscar por ID.", "I",
-			    buscar_id, &tp2);
+	menu_agregar_opcion(menu_buscar, "Buscar por ID.", "I", buscar_id,
+			    &tp2);
 	menu_agregar_opcion(menu_buscar, "Volver al menú anterior.", "A",
 			    salir_del_menu, menu_buscar);
-
 
 	menu_agregar_opcion(menu_mostrar, "Mostrar por orden alfabético.", "N",
 			    mostrar_nombre, &tp2);
@@ -264,7 +265,13 @@ int main(int argc, char *argv[])
 			    mostrar_id, &tp2);
 	menu_agregar_opcion(menu_mostrar, "Volver al menú anterior.", "A",
 			    salir_del_menu, menu_mostrar);
-	
+
+	if (tp1 != NULL) {
+		if (tp1_cantidad(tp1) < CANTIDAD_PARES)
+			interfaz_menu_error(
+				"La cantidad de pokemones es muy baja, no se ha podido cargar el archivo.",
+				*tp2.estilo);
+	}
 	entrar_al_menu(menu_principal);
 
 	tp1_destruir(tp2.tp1);

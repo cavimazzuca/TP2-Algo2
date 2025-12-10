@@ -25,7 +25,8 @@ void print_estilo(const char *texto, enum estilo estilo);
  * Si es usada en bucle, funciona como una interfaz de línea de comandos
  * con mensajes de error.
  */
-bool leer_comando(bool (*f)(char *, void *, char *), void *ctx, char *mensaje_error);
+bool leer_comando(bool (*f)(char *, void *, char *), void *ctx,
+		  char *mensaje_error);
 
 /**
  * Muestra las opciones del menú en la terminal y permite ejecutarlas
@@ -35,7 +36,7 @@ void interfaz_menu_entrar(menu_t *menu);
 /**
  * Crea un menú de error con el mensaje dado y lo muestra.
  */
-void interfaz_menu_error(char* mensaje, enum estilo estilo);
+void interfaz_menu_error(char *mensaje, enum estilo estilo);
 
 /**
  * Escribe en la terminal el prefijo correspondiente al estilo dado.
